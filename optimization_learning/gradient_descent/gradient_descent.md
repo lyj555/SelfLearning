@@ -1,6 +1,5 @@
 # Gradient Descent
 
-[comment]: <> (this is a comment, upload github)
 
 ## 1.简介
 在微积分里面，对多元函数的参数求$\partial$偏导数，把求得的各个参数的偏导数以向量的形式写出来，就是梯度。比如函数$f(x,y)$ 分别对$x,y$求偏导数，求得的梯度向量就是$(\partial f/\partial x,\partial f/\partial y)^T$,简称$grad \  f(x,y)$或者$\nabla f(x,y)$。梯度下降是求解无约束优化问题常用的一种优化算法，常用于机器学习和人工智能当中用来递归性地逼近最小偏差模型。
@@ -149,6 +148,6 @@ $\ \ \ \ \theta_i^{(l)} = \theta_{i-1}^{(l)}-\alpha \cdot \left. \frac{\partial 
 
 ## 6. 参考资源
 
-[1]. 周志华， 机器学习，p407-408
-[2]. [梯度下降（Gradient Descent）小结](https://www.cnblogs.com/pinard/p/5970503.html)
+[1]. 周志华， 机器学习，p407-408  
+[2]. [梯度下降（Gradient Descent）小结](https://www.cnblogs.com/pinard/p/5970503.html)  
 [3]. [Gradient descent-Wiki](https://en.wikipedia.org/wiki/Gradient_descent#Examples)
