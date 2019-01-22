@@ -3,7 +3,7 @@
 ## 1. git command 
 
 | git command | 命令说明 | 
-|:--:|:--:|
+|:--|:--|
 |`git status` | 查看当前状态 | 
 | `git diff [file]` | 查看file修改内容 |
 | `git log` | 查看从最近到最远的提交日志 |
