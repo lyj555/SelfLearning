@@ -10,6 +10,7 @@ This repo is roughly divided into many parts:
 - programming learning
 ...
 
-> TODO: **GradientBoosting** **Regularization** **CoordinateDescent** **NewtonMethod**
+> TODO: **GradientBoosting**  **CoordinateDescent** **NewtonMethod**
+		**NP-hard** **Stacking&Blending**
 
 > **Note:** don't study for just learning, whereas study to improve yourself
