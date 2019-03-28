@@ -12,5 +12,4 @@ This repo is roughly divided into many parts:
 
 > TODO: **GradientBoosting**  **NewtonMethod**
 		**NP-hard** **Stacking&Blending**
-
-  
+    
