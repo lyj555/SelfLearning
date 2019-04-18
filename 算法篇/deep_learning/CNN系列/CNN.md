@@ -1,17 +1,49 @@
 
 目录
 ---
--   [1. CNN简介](#cnn简介)
+
+-   [1. CNN简介](#1.-CNN简介)
     -   [1.1 卷积运算](#卷积运算)
+        -   [1.1.1 卷积中关键参数](#卷积中关键参数)
+        -   [1.1.2 卷积的性质](#卷积的性质)
     -   [1.2 最大池化运算](#最大池化运算)
+        -   [1.2.1
+            为什么不删除最大池化层，保留较大的特征图？](#为什么不删除最大池化层保留较大的特征图)
+        -   [1.2.2 使用最大池化的作用](#使用最大池化的作用)
+        -   [1.2.3
+            相较于平均池化，为什么最大池化更好](#相较于平均池化为什么最大池化更好)
 -   [2. CNN网络结构](#cnn网络结构)
     -   [2.1 LeNet(1998)](#lenet1998)
+        -   [2.1.1 LeNet网络架构](#lenet网络架构)
+        -   [2.1.2 代码实现](#代码实现)
+        -   [2.1.3 参考资源](#参考资源)
     -   [2.2 AlexNet(2012)](#alexnet2012)
+        -   [2.2.1 AlexNet网络架构](#alexnet网络架构)
+        -   [2.2.2 比较LeNet](#比较lenet)
+        -   [2.2.3 代码实现](#代码实现-1)
     -   [2.3 ZFNet(2013)](#zfnet2013)
+        -   [2.3.1 ZFNet网络架构](#zfnet网络架构)
+        -   [2.3.2 代码实现](#代码实现-2)
     -   [2.4 VGGNet(2014)](#vggnet2014)
+        -   [2.4.1 VGGNet网络架构](#vggnet网络架构)
+        -   [2.4.2 VGG创新点](#vgg创新点)
+        -   [2.4.3 VGG作者的三个结论](#vgg作者的三个结论)
+        -   [2.4.4 代码实现](#代码实现-3)
     -   [2.5 GoogleNet(2014)](#googlenet2014)
+        -   [2.5.1 GoogleNet网络结构](#googlenet网络结构)
+        -   [2.5.2 GoogleNet创新点](#googlenet创新点)
+        -   [2.5.3 googleNet的其它版本](#googlenet的其它版本)
+        -   [2.5.4 代码实现](#代码实现-4)
+        -   [2.5.5 参考资源](#参考资源-1)
     -   [2.6 ResNet(2015)](#resnet2015)
+        -   [2.6.1 过深的网络带来的问题](#过深的网络带来的问题)
+        -   [2.6.2 残差模块](#残差模块)
+        -   [2.6.3 ResNet创新点](#resnet创新点)
+        -   [2.6.4 代码实现](#代码实现-5)
     -   [2.7 DenseNet(2017)](#densenet2017)
+        -   [2.7.2 密集连接会不会带来冗余？](#密集连接会不会带来冗余)
+        -   [2.7.3 DenseNet创新点](#densenet创新点)
+        -   [2.7.4 代码实现](#代码实现-6)
 -   [2. Refercences](#refercences)
 
 
@@ -668,7 +700,7 @@ def DenseNet121(nb_dense_block=4, growth_rate=32, nb_filter=64, reduction=0.0, d
     return model
 ```
 
-## 2. Refercences
+## 3. Refercences
 
 [1] [CNN Architectures](https://medium.com/@sidereal/cnns-architectures-lenet-alexnet-vgg-googlenet-resnet-and-more-666091488df5)   
 [2] [CNN网络架构演进：从LeNet到DenseNet](https://www.cnblogs.com/skyfsm/p/8451834.html)   
