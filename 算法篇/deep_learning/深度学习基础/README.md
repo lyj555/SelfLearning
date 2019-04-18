@@ -1,5 +1,5 @@
 本部分notebook目录如下：
-- - 1.Data Representation
+- 1.Data Representation
     - 1.1 张量介绍
     - 1.2 张量计算
         - 1.2.1 逐元素运算
