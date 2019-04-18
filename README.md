@@ -6,7 +6,7 @@
 分别是Markdown、Git和python。
 
 项目架构图，如下，
-![项目结构图](/pics/项目框架.jpg)   
+![项目结构图](/pics/项目框架.png)   
 
 
     
