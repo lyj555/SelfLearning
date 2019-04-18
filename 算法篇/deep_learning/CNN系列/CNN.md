@@ -1,5 +1,30 @@
-<h1>Table of Contents<span class="tocSkip"></span></h1>
-<div class="toc"><ul class="toc-item"><li><span><a href="#1.-CNN简介" data-toc-modified-id="1.-CNN简介-1">1. CNN简介</a></span><ul class="toc-item"><li><span><a href="#1.1-卷积运算" data-toc-modified-id="1.1-卷积运算-1.1">1.1 卷积运算</a></span><ul class="toc-item"><li><span><a href="#1.1.1-卷积中关键参数" data-toc-modified-id="1.1.1-卷积中关键参数-1.1.1">1.1.1 卷积中关键参数</a></span></li><li><span><a href="#1.1.2-卷积的性质" data-toc-modified-id="1.1.2-卷积的性质-1.1.2">1.1.2 卷积的性质</a></span></li></ul></li><li><span><a href="#1.2-最大池化运算" data-toc-modified-id="1.2-最大池化运算-1.2">1.2 最大池化运算</a></span><ul class="toc-item"><li><span><a href="#1.2.1-为什么不删除最大池化层，保留较大的特征图？" data-toc-modified-id="1.2.1-为什么不删除最大池化层，保留较大的特征图？-1.2.1">1.2.1 为什么不删除最大池化层，保留较大的特征图？</a></span></li><li><span><a href="#1.2.2-使用最大池化的作用" data-toc-modified-id="1.2.2-使用最大池化的作用-1.2.2">1.2.2 使用最大池化的作用</a></span></li><li><span><a href="#1.2.3-相较于平均池化，为什么最大池化更好" data-toc-modified-id="1.2.3-相较于平均池化，为什么最大池化更好-1.2.3">1.2.3 相较于平均池化，为什么最大池化更好</a></span></li></ul></li></ul></li><li><span><a href="#2.-CNN网络结构" data-toc-modified-id="2.-CNN网络结构-2">2. CNN网络结构</a></span><ul class="toc-item"><li><span><a href="#2.1-LeNet(1998)" data-toc-modified-id="2.1-LeNet(1998)-2.1">2.1 LeNet(1998)</a></span><ul class="toc-item"><li><span><a href="#2.1.1-LeNet网络架构" data-toc-modified-id="2.1.1-LeNet网络架构-2.1.1">2.1.1 LeNet网络架构</a></span></li><li><span><a href="#2.1.2-代码实现" data-toc-modified-id="2.1.2-代码实现-2.1.2">2.1.2 代码实现</a></span></li><li><span><a href="#2.1.3-参考资源" data-toc-modified-id="2.1.3-参考资源-2.1.3">2.1.3 参考资源</a></span></li></ul></li><li><span><a href="#2.2-AlexNet(2012)" data-toc-modified-id="2.2-AlexNet(2012)-2.2">2.2 AlexNet(2012)</a></span><ul class="toc-item"><li><span><a href="#2.2.1-AlexNet网络架构" data-toc-modified-id="2.2.1-AlexNet网络架构-2.2.1">2.2.1 AlexNet网络架构</a></span></li><li><span><a href="#2.2.2-比较LeNet" data-toc-modified-id="2.2.2-比较LeNet-2.2.2">2.2.2 比较LeNet</a></span></li><li><span><a href="#2.2.3-代码实现" data-toc-modified-id="2.2.3-代码实现-2.2.3">2.2.3 代码实现</a></span></li></ul></li><li><span><a href="#2.3-ZFNet(2013)" data-toc-modified-id="2.3-ZFNet(2013)-2.3">2.3 ZFNet(2013)</a></span><ul class="toc-item"><li><span><a href="#2.3.1-ZFNet网络架构" data-toc-modified-id="2.3.1-ZFNet网络架构-2.3.1">2.3.1 ZFNet网络架构</a></span></li><li><span><a href="#2.3.2-代码实现" data-toc-modified-id="2.3.2-代码实现-2.3.2">2.3.2 代码实现</a></span></li></ul></li><li><span><a href="#2.4-VGGNet(2014)" data-toc-modified-id="2.4-VGGNet(2014)-2.4">2.4 VGGNet(2014)</a></span><ul class="toc-item"><li><span><a href="#2.4.1-VGGNet网络架构" data-toc-modified-id="2.4.1-VGGNet网络架构-2.4.1">2.4.1 VGGNet网络架构</a></span></li><li><span><a href="#2.4.2-VGG创新点" data-toc-modified-id="2.4.2-VGG创新点-2.4.2">2.4.2 VGG创新点</a></span></li><li><span><a href="#2.4.3-VGG作者的三个结论" data-toc-modified-id="2.4.3-VGG作者的三个结论-2.4.3">2.4.3 VGG作者的三个结论</a></span></li><li><span><a href="#2.4.4-代码实现" data-toc-modified-id="2.4.4-代码实现-2.4.4">2.4.4 代码实现</a></span></li></ul></li><li><span><a href="#2.5-GoogleNet(2014)" data-toc-modified-id="2.5-GoogleNet(2014)-2.5">2.5 GoogleNet(2014)</a></span><ul class="toc-item"><li><span><a href="#2.5.1-GoogleNet网络结构" data-toc-modified-id="2.5.1-GoogleNet网络结构-2.5.1">2.5.1 GoogleNet网络结构</a></span></li><li><span><a href="#2.5.2-GoogleNet创新点" data-toc-modified-id="2.5.2-GoogleNet创新点-2.5.2">2.5.2 GoogleNet创新点</a></span></li><li><span><a href="#2.5.3-googleNet的其它版本" data-toc-modified-id="2.5.3-googleNet的其它版本-2.5.3">2.5.3 googleNet的其它版本</a></span></li><li><span><a href="#2.5.4-代码实现" data-toc-modified-id="2.5.4-代码实现-2.5.4">2.5.4 代码实现</a></span></li><li><span><a href="#2.5.5-参考资源" data-toc-modified-id="2.5.5-参考资源-2.5.5">2.5.5 参考资源</a></span></li></ul></li><li><span><a href="#2.6-ResNet(2015)" data-toc-modified-id="2.6-ResNet(2015)-2.6">2.6 ResNet(2015)</a></span><ul class="toc-item"><li><span><a href="#2.6.1-过深的网络带来的问题" data-toc-modified-id="2.6.1-过深的网络带来的问题-2.6.1">2.6.1 过深的网络带来的问题</a></span></li><li><span><a href="#2.6.2-残差模块" data-toc-modified-id="2.6.2-残差模块-2.6.2">2.6.2 残差模块</a></span></li><li><span><a href="#2.6.3-ResNet创新点" data-toc-modified-id="2.6.3-ResNet创新点-2.6.3">2.6.3 ResNet创新点</a></span></li><li><span><a href="#2.6.4-代码实现" data-toc-modified-id="2.6.4-代码实现-2.6.4">2.6.4 代码实现</a></span></li></ul></li><li><span><a href="#2.7-DenseNet(2017)" data-toc-modified-id="2.7-DenseNet(2017)-2.7">2.7 DenseNet(2017)</a></span><ul class="toc-item"><li><span><a href="#2.7.1-DenseBlock模块" data-toc-modified-id="2.7.1-DenseBlock模块-2.7.1">2.7.1 DenseBlock模块</a></span></li><li><span><a href="#2.7.2-密集连接会不会带来冗余？" data-toc-modified-id="2.7.2-密集连接会不会带来冗余？-2.7.2">2.7.2 密集连接会不会带来冗余？</a></span></li><li><span><a href="#2.7.3-DenseNet创新点" data-toc-modified-id="2.7.3-DenseNet创新点-2.7.3">2.7.3 DenseNet创新点</a></span></li><li><span><a href="#2.7.4-代码实现" data-toc-modified-id="2.7.4-代码实现-2.7.4">2.7.4 代码实现</a></span></li></ul></li></ul></li><li><span><a href="#2.-Refercences" data-toc-modified-id="2.-Refercences-3">2. Refercences</a></span></li></ul></div>
+
+目录
+----
+<!-- TOC -->
+
+- [1. CNN简介 ](## 1. CNN简介 )
+ 	- [1.1 卷积运算](### 1.1 卷积运算)
+  	- [意义](#意义)
+- [卷积的内部实现](#卷积的内部实现)
+  - [Theano 中的实现](#theano-中的实现)
+  - [Caffe 中的实现](#caffe-中的实现)
+- [卷积的反向传播](#卷积的反向传播)
+- [卷积的结构](#卷积的结构)
+  - [卷积核的结构及其数量](#卷积核的结构及其数量)
+  - [基本卷积](#基本卷积)
+  - [转置卷积](#转置卷积)
+  - [空洞卷积](#空洞卷积)
+  - [可分离卷积](#可分离卷积)
+  - [Keras 实现](#keras-实现)
+- [门卷积](#门卷积)
+  - [门卷积的作用](#门卷积的作用)
+  - [门卷积是如何防止梯度消失的](#门卷积是如何防止梯度消失的)
+- [其他](#其他)
+  - [为什么使用 CNN 代替 RNN？](#为什么使用-cnn-代替-rnn)
+- [Reference](#reference)
+
+<!-- /TOC -->
 
 
 ## 1. CNN简介  
