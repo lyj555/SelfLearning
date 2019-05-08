@@ -1,6 +1,6 @@
 本部分主要是总结RNN结构，主要是标准RNN，LSTM以及GRU，除此还有一章介绍 BPTT(Back Propagation Through TIme)。
 
-> 本目录下有两个文件，CNN.ipynb和CNN.md，目前来两个文件是一致的。总结时用notebook的markdown进行总结，后来粘贴到CNN.md中
+> 本目录下有两个文件，RNN.ipynb和RNN.md，目前来两个文件是一致的。总结时用notebook的markdown进行总结，后来粘贴到RNN.md中
 
 - TODO
 	- 相应的代码实现（Pytorch, Keras以及Tensorflow）
