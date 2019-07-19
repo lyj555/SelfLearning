@@ -86,7 +86,7 @@ Hadoop maintained memory buffer 里的 key value pair 按 key 值排序，并且
 JobTracker一个进程的形式运行，一直等待用户提交的任务，当JobTracker接收了用户的提取交的任务（指定mapper function/reducer function/data path）后，接下来挑选机器执行相应的函数。
 
 - TaskTracker
-上面提到了，需要JobTracker挑选机器来执行相应的函数，那么需要定义一下每台机器的繁忙程度，Hadoop所做的是为每一台机器定义N个slot，slot占用的个数来衡量机器的繁忙程度，slot是通过机器cpu和内存的情况设定的。JobTracker知识运行在一台机器上的一个进程，它是如何知道其它机器有哪些slot呢？
+上面提到了，需要JobTracker挑选机器来执行相应的函数，那么需要定义一下每台机器的繁忙程度，Hadoop所做的是为每一台机器定义N个slot，slot占用的个数来衡量机器的繁忙程度，slot是通过机器cpu和内存的情况设定的。JobTracker只是运行在一台机器上的一个进程，它是如何知道其它机器有哪些slot呢？
 它是通过TaskTracker完成的，TaskerTracker是运行在每一台机器上的一个[daemon](https://baike.baidu.com/link?url=mID4rL3vgdW_nrMaposCBC-At_NdgqB_YuHyTWgr8XufNXXH49MrM4IIHvwanEEj41BPhn3WSDCDimd7Vh5mDEDRUAcCaeh_GP_qLqOwo2a)，它的首要任务就是跟踪本台机器有那些slot，当TaskTracker启动时，它从机器管理员写的config file中读取这台机器有几个slot，当JobTracker分配给这台机器一个mapper function或者reducer function时，那TaskTracker就会将slot个数减少一个。
 
 - TaskTracker和Slots
@@ -112,7 +112,7 @@ RM有两个重要的组件：Scheduler和ApplicationsManager。
 	- Scheduler
 	负责分配资源给每个正在运行的应用（仅负责分配资源），资源的形态以container表示，后面介绍
     - ApplicationManager
-    负责负责管理整个系统中所有应用程序，包括应用程序提交、与调度器协商资源以启动ApplicationMaster、监控ApplicationMaster运行状态并在失败时重新启动它等
+    负责管理整个系统中所有应用程序，包括应用程序提交、与调度器协商资源以启动ApplicationMaster、监控ApplicationMaster运行状态并在失败时重新启动它等
 
 - **ApplicationMaster(AM)**
 用户提交的每一个应用程序均包含一个AM，主要功能：
@@ -129,6 +129,136 @@ NM是每个节点上的资源和任务管理器，一方面，它会定时地向
 ## 2. Hadoop生态系统：Hive
 
 用于Hdoop的一个数据仓库系统，它提供类似SQL的查询语言，通过使用该语言，可以方便对数据进行汇总，特定查询以及分析存放在Hadoop兼容文件系统中的大数据。
+
+### 2.1 Hive表 
+
+#### 2.1.1 分区
+- 动态分区
+```
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+```
+- 静态分区
+
+> 两者的区别主要是插入数据时，静态分区需要指定分区的取值，而动态分区不需要指定，会自动根据列的取值进行分区（当分区级数多且数据量大时方便）
+
+#### 2.1.2 分桶
+```
+set hive.enforce.bucketing=true;
+set hive.enforce.sorting=true;
+```
+按照分桶字段的hash值去模除以分桶的个数，只能mapreduce中间结果insert到分桶表中（set mapreduce.job.reduces = num;）
+
+
+> 分桶和分区的区别，参考[链接](https://blog.csdn.net/weixin_39393048/article/details/82530254)，分区是针对hdfs目录的操作（粗粒度），分桶是针对文件的操作（细粒度）
+
+1、方便抽样
+2、提高join查询效率(相同分桶表，桶数是倍数关系)
+
+### 2.2 Hive查询操作优化
+
+#### 2.2.1 join优化
+```
+hive.optimize.skewjoin=true;如果是join过程中出现倾斜 应该设置为true
+set hive.skewjoin.key=100000; 这个是join的键对应的记录条数，超过这个值则会进行优化
+
+hive.skewjoin.mapjoin.map.tasks 默认10000
+hive.skewjoin.mapjoin.min.split 默认33554432
+```
+
+#### 2.2.2 group by
+```
+hive.group.skewindata=true; 如果是group by过程出现倾斜，应该设置为true
+set hive.groupby.mapaggr.checkinterval=100000; 这个是group的键对应的记录条数超过这个值则会进行优化
+```
+
+
+#### 2.2.3 count distinct
+```
+select count(distinct id) from tablename;
+
+after optimize
+
+select count(1) from (select distinct id from tablename) tmp;
+select count(1) from (select id from tablename group by id) tmp;
+```
+
+### 2.3 Hive job优化
+
+1. 并行化执行
+每个查询被Hive转化为多个阶段，有些阶段关联性不大，则可以并行化执行，减少执行时间
+
+    ```
+    set hive.exec.parallel=true;
+    set hive.exec.parallel.thread.number=8;
+    ```
+2. job合并输入小文件
+```
+set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat
+```
+> 合并文件数由mapred.max.split.size限制的大小决定
+
+3. job合并输出小文件
+
+```
+set hive.merge.smallfiles.avgsize=256000000;当输出文件平均大小小于该值，启动新job合并文件
+set hive.merge.size.per.task=64000000;合并之后的文件大小
+
+When the average output file size of a job is less than this number, Hive will start an additional map-reduce job to merge the output files into bigger files. This is only done for map-only jobs if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true.
+```
+
+### 2.4 Hive Map优化
+
+（1）如果想增加map个数，则设置mapred.map.tasks 为一个较大的值。
+（2）如果想减小map个数，则设置mapred.min.split.size 为一个较大的值。
+（3）如果输入中有很多小文件，依然想减少map个数，则需要将小文件merger为大文件，然后使用准则2。
+
+参考[链接](https://www.jianshu.com/p/af5ff4c3348f)
+
+### 2.5 Hive Shuffle优化
+- Map端
+```
+io.sort.mb
+io.sort.spill.percent
+min.num.spill.for.combine
+io.sort.factor
+io.sort.record.percent
+```
+
+- Reduce端
+```
+mapred.reduce.parallel.copies
+mapred.reduce.copy.backoff
+io.sort.factor
+mapred.job.shuffle.input.buffer.percent
+mapred.job.reduce.input.buffer.percent
+```
+
+
+### 2.6 Hive Reduce优化
+需要reduce操作的查询
+
+- 聚合函数   
+sum,count,distinct...
+
+- 高级查询   
+group by, join, distribute by, sort by, cluster by...
+order by 比较特殊，只需要一个reduce(比较慢)
+sort by 按照reducers来排序
+distribute by 按照字段分发到reducer
+参考[链接](https://blog.csdn.net/fantasticqiang/article/details/80769316)
+
+```
+mapred.reduce.tasks
+the default number of reduce tasks per job, -1自动调整
+
+hive.exec.reducers.max 默认999
+
+hive.exec.reducers.bytes.per.reducer
+每个reducer的字节，根据输入自动切分
+```
+
+以上主要参考[Hive之——Hive SQL优化](https://blog.csdn.net/l1028386804/article/details/80629279)
 
 ## 3. Hadoop生态系统：HBase
 一种分布式的、可伸缩的、大数据存储库，支持随机、实时读/写访问。
