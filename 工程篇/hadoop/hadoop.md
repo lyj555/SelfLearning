@@ -209,9 +209,9 @@ When the average output file size of a job is less than this number, Hive will s
 
 ### 2.4 Hive Map优化
 
-（1）如果想增加map个数，则设置mapred.map.tasks 为一个较大的值。
-（2）如果想减小map个数，则设置mapred.min.split.size 为一个较大的值。
-（3）如果输入中有很多小文件，依然想减少map个数，则需要将小文件merger为大文件，然后使用准则2。
+（1）如果想增加map个数，则设置mapred.map.tasks 为一个较大的值。  
+（2）如果想减小map个数，则设置mapred.min.split.size 为一个较大的值。   
+（3）如果输入中有很多小文件，依然想减少map个数，则需要将小文件merger为大文件，然后使用准则2。   
 
 参考[链接](https://www.jianshu.com/p/af5ff4c3348f)
 
@@ -243,9 +243,9 @@ sum,count,distinct...
 
 - 高级查询   
 group by, join, distribute by, sort by, cluster by...
-order by 比较特殊，只需要一个reduce(比较慢)
-sort by 按照reducers来排序
-distribute by 按照字段分发到reducer
+order by 比较特殊，只需要一个reduce(比较慢)   
+sort by 按照reducers来排序   
+distribute by 按照字段分发到reducer    
 参考[链接](https://blog.csdn.net/fantasticqiang/article/details/80769316)
 
 ```
