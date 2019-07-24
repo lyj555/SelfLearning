@@ -185,27 +185,63 @@ select count(1) from (select id from tablename group by id) tmp;
 
 ### 2.3 Hive job优化
 
-1. 并行化执行
+一些基本原则
+- 尽量尽早地过滤数据，减少每个阶段的数据量,对于分区表要加分区，同时只选择需要使用到的字段
+- 尽量原子化操作，尽量避免一个SQL包含复杂逻辑
+- join操作   小表要注意放在join的左边，否则会引起磁盘和内存的大量消耗
+- 如果union all的部分个数大于2，或者每个union部分数据量大，应该拆成多个insert into 语句，实际测试过程中，执行时间能提升50%
+- 写SQL要先了解数据本身的特点，如果有join ,group操作的话，要注意是否会有数据倾斜
+
+```
+如果出现数据倾斜，应当做如下处理：
+
+set hive.exec.reducers.max=200;
+set mapred.reduce.tasks= 200;---增大Reduce个数
+
+hive.map.aggr = true 在Map端做combiner,假如map各条数据基本上不一样, 聚合没什么意义，做combiner反而画蛇添足
+set hive.groupby.mapaggr.checkinterval=100000 ;--这个是group的键对应的记录条数超过这个值则会进行分拆,值根据具体数据量设置
+
+set hive.groupby.skewindata=true; --如果是group by过程出现倾斜 应该设置为true
+控制生成两个MR Job,第一个MR Job Map的输出结果随机分配到reduce做次预汇总,减少某些key值条数过多某些key条数过小造成的数据倾斜问题
+
+
+set hive.skewjoin.key=100000; --这个是join的键对应的记录条数超过这个值则会进行分拆,值根据具体数据量设置
+set hive.optimize.skewjoin=true;--如果是join 过程出现倾斜 应该设置为true
+```
+
+- 注意join的使用
+若其中有一个表很小使用map join，否则使用普通的reduce join，注意hive会将join前面的表数据装载内存,所以较小的一个表在较大的表之前,减少内存资源的消耗
+
+
+- 并行化执行
+ 启动一次job尽可能的多做事情，一个job能完成的事情,不要两个job来做通常来说前面的任务启动可以稍带一起做的事情就一起做了,以便后续的多个任务重用,与此紧密相连的是模型设计,好的模型特别重要.
 每个查询被Hive转化为多个阶段，有些阶段关联性不大，则可以并行化执行，减少执行时间
 
     ```
     set hive.exec.parallel=true;
     set hive.exec.parallel.thread.number=8;
     ```
-2. job合并输入小文件
+
+- 输入小文件问题
+	- job合并输入小文件
 ```
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat
 ```
 > 合并文件数由mapred.max.split.size限制的大小决定
 
-3. job合并输出小文件
+	- 额外的MR Job打包输入小文件
+hive.merge.mapredfiles = false 是否合并 Reduce 输出文件，默认为 False 
+hive.merge.size.per.task = 256*1000*1000 合并文件的大小 
 
-```
-set hive.merge.smallfiles.avgsize=256000000;当输出文件平均大小小于该值，启动新job合并文件
-set hive.merge.size.per.task=64000000;合并之后的文件大小
 
-When the average output file size of a job is less than this number, Hive will start an additional map-reduce job to merge the output files into bigger files. This is only done for map-only jobs if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true.
-```
+- 输出小文件
+
+    ```
+    set hive.merge.smallfiles.avgsize=256000000;当输出文件平均大小小于该值，启动新job合并文件
+    set hive.merge.size.per.task=64000000;合并之后的文件大小
+
+    When the average output file size of a job is less than this number, Hive will start an additional map-reduce job to merge the output files into bigger files. This is only done for map-only jobs if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true.
+    ```
 
 ### 2.4 Hive Map优化
 
@@ -226,13 +262,29 @@ io.sort.record.percent
 ```
 
 - Reduce端
-```
-mapred.reduce.parallel.copies
-mapred.reduce.copy.backoff
-io.sort.factor
-mapred.job.shuffle.input.buffer.percent
-mapred.job.reduce.input.buffer.percent
-```
+    可以在hive运行sql的时，打印出来，如下：
+
+    Number of reduce tasks not specified. Estimated from input data size: 1
+    In order to change the average load for a reducer (in bytes):
+      set hive.exec.reducers.bytes.per.reducer=<number>
+    In order to limit the maximum number of reducers:
+      set hive.exec.reducers.max=<number>
+    In order to set a constant number of reducers:
+      set mapred.reduce.tasks=<number>
+
+    reduce数量由以下三个参数决定，
+    mapred.reduce.tasks(强制指定reduce的任务数量)
+
+    hive.exec.reducers.bytes.per.reducer（每个reduce任务处理的数据量，默认为1000^3=1G）
+
+    hive.exec.reducers.max（每个任务最大的reduce数，默认为999）
+
+    计算reducer数的公式很简单N=min( hive.exec.reducers.max ，总输入数据量/ hive.exec.reducers.bytes.per.reducer )
+
+      只有一个reduce的场景：
+      a、没有group by 的汇总
+      b、order by
+      c、笛卡尔积
 
 
 ### 2.6 Hive Reduce优化
@@ -258,7 +310,9 @@ hive.exec.reducers.bytes.per.reducer
 每个reducer的字节，根据输入自动切分
 ```
 
-以上主要参考[Hive之——Hive SQL优化](https://blog.csdn.net/l1028386804/article/details/80629279)
+以上主要参考
+[Hive之——Hive SQL优化](https://blog.csdn.net/l1028386804/article/details/80629279)
+[hive的查询注意事项以及优化总结](https://www.cnblogs.com/xd502djj/p/3799432.html)
 
 ## 3. Hadoop生态系统：HBase
 一种分布式的、可伸缩的、大数据存储库，支持随机、实时读/写访问。
