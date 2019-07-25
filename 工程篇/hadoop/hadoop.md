@@ -55,7 +55,7 @@ MapReduce是一个快速、高效、简单用于编写并行处理大数据程�
 
 #### 1.2.1 Shuffle优化
 下面是word count的MapReduce架构图，   
-![MapReduce架构图](../../pics/hadoop_shuffle.jpg)
+![word_count_MapReduce架构图](../../pics/hadoop_shuffle.jpg)
 
 我们从这个例子的图中可以看出，每个 map function 会输出一组 key value pair, Shuffle 阶段需要从所有 map host 上把相同的 key 的 key value pair 组合在一起，组合后传给 reduce host, 作为输入进入 reduce function 里。   
 所有map function产生的key可能有成百上千，经过shuffle组合key工作后，依然是相同的数目，而负责reduce host可能只有几十个，几百个，那 Hadoop 的分配 key value pair 的策略是什么？
@@ -92,7 +92,7 @@ TaskTracker 有一个 heartbeat 机制，就是每隔几秒钟或者几分钟向
 MRv2最核心的思想是将之前的JobTracker的两个主要功能分离为连个单独的组件，这两个功能是资源管理和任务调度/监控。资源管理器(ResourceManager)负责全局管理所有的应用程序计算资源的分配，每一个应用程序的ApplicationMaster负责相应的调度和监控。这里的应用程序指MapReduce任务或者DAG（有向无环图）任务。
 
 yarn架构图如下，   
-![](../../pics/yarn.png)
+![yarn架构图](../../pics/yarn.png)
 
 将JobTracker和TaskTracker进行分离，它由下面几大构成组件：   
 a. 一个全局的资源管理器 ResourceManager   
