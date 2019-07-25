@@ -18,7 +18,8 @@ NameNode是一个中心服务器，负责管理文件系统的名字空间(names
 - DataNode   
 存储data block的机器叫做DataNodes，在读写过程中，DataNode负责直接把用户读取的block传给client，也负责直接接收用户写的文件。
 
-HDFS整体架构图，
+HDFS整体架构图，   
+
 ![](../../pics/hdfs.jpg)
 
 HDFS数据上传过程，
@@ -28,36 +29,37 @@ HDFS数据上传过程，
 4) DataNode在NameNode的指导下复制这些块，数据备份。
 
 #### 1.1.1 数据备份
-- Rack
+- Rack   
 通常若干台机器垂直的组成一个Rack，类似一个书架，一个rack共享一个电源，一条网线和一个交换机。HDFS存储数据默认一份数据存储三份，通常在同一个rack上存储一份，然后在另外一个rack上存储另外两份，保证数据 有更高的安全性。
 
 - 读写
-	- 写
+	- 写   
 如果HDFS为每一个block存储三份，那client如何来写，是否同时像三个DataNode写，显然不是这样。当 client 写文件创建新 block 的时后，Name nodes 会为这个 block 创建一个整个 HDFS cluster 里独有的 block ID，并且决定哪些 DataNodes 来存储这个 block 的所有备份。这些被选择的 DataNodes 组成一个队列，client 向队列的第一个 Data node 写，那么第一个 DataNode 除了把数据存在自己的硬盘上以外，还要把数据传给队列里的下一个 DataNode，如此这般，直到最后一个 DataNode 接到数据完毕。
-	- 读
+	- 读   
 同样的，当 HDFS client 读取一个文件时，它首先从 Name nodes 获得这个文件所有 blocks 和每个 block 的所有备份所在机器位置。当 client 开始读取 block 时，client 会选择从“最近”的一台机器读取备份（“最近”指的是网络延迟最短），如果第一个备份出现问题，比如网络突然中断，或者硬盘出故障，那 client 就从第二个备份读，以此类推。
 
 > 在读写一个文件时，当我们从 NameNodes 得知应该向哪些 DataNodes 读写之后，我们就直接和 DataNode 打交道，不再通过 NameNodes.
 
 ### 1.2 MapReduce
 MapReduce是一个快速、高效、简单用于编写并行处理大数据程序并应用在大集群上的编程框架，整体分为三个阶段，分别是Map，Shuffle和Reduce。
-- Map阶段
+- Map阶段   
 每台机器处理本机的数据，产生运算结果
 
-- Shuffle阶段
+- Shuffle阶段   
 将Map阶段结果汇总（按照关键字组合，相同的key会被传送到同一个reducer中），这就是Shuffle阶段
 
-- Reduce阶段
+- Reduce阶段   
 处理shuffle后的结果，产出最终的结算结果
 
-下面是MapReduce模型架构，
+下面是MapReduce模型架构，   
+
 ![](../../pics/map_reduce.jpg)
 
 
 #### 1.2.1 Shuffle优化
 ![](../../pics/hadoop_shuffle.jpg)
 
-我们从这个例子的图中可以看出，每个 map function 会输出一组 key value pair, Shuffle 阶段需要从所有 map host 上把相同的 key 的 key value pair 组合在一起，组合后传给 reduce host, 作为输入进入 reduce function 里。
+我们从这个例子的图中可以看出，每个 map function 会输出一组 key value pair, Shuffle 阶段需要从所有 map host 上把相同的 key 的 key value pair 组合在一起，组合后传给 reduce host, 作为输入进入 reduce function 里。   
 所有map function产生的key可能有成百上千，经过shuffle组合key工作后，依然是相同的数目，而负责reduce host可能只有几十个，几百个，那 Hadoop 的分配 key value pair 的策略是什么？
 **Partitioner component**负责计算哪些 key 应当被放到同一个 reduce host里(比如key值的hash value)。
 
@@ -70,7 +72,7 @@ MapReduce是一个快速、高效、简单用于编写并行处理大数据程�
     随着 Map 不断运行，有可能有多个 spill file 被制造出来。当 Map 结束时，这些 spill file 会被 merge 起来——不是 merge 成一个 file，而是按 reduce partition 分成多个。
 
 - 在 Reduce 端的运作   
-由于 Map tasks 有可能在不同时间结束，所以 reduce tasks 没必要等所有 map tasks 都结束才开始。事实上，每个 reduce task 有一些 threads 专门负责从 map host copy map output（默认是5个，可以通过 $mapred.reduce.parallel.copies 参数设置）；考虑到网络的延迟问题，并行处理可以在一定程度上提高效率。
+由于 Map tasks 有可能在不同时间结束，所以 reduce tasks 没必要等所有 map tasks 都结束才开始。事实上，每个 reduce task 有一些 threads 专门负责从 map host copy map output（默认是5个，可以通过 $mapred.reduce.parallel.copies 参数设置），考虑到网络的延迟问题，并行处理可以在一定程度上提高效率。
 
 ### 1.3 Yarn
 
@@ -91,8 +93,8 @@ TaskTracker 有一个 heartbeat 机制，就是每隔几秒钟或者几分钟向
 基于之前存在缺点，YARN（也称为MRv2）诞生，它主要包括ResourceManager、ApplicationMaster、NodeManager，其中ResourceManager用来代替集群管理器，ApplicationMaster代替一个专用且短暂的JobTracker，NodeManager代替TaskTracker。
 MRv2最核心的思想是将之前的JobTracker的两个主要功能分离为连个单独的组件，这两个功能是资源管理和任务调度/监控。资源管理器(ResourceManager)负责全局管理所有的应用程序计算资源的分配，每一个应用程序的ApplicationMaster负责相应的调度和监控。这里的应用程序指MapReduce任务或者DAG（有向无环图）任务。
 
-yarn架构图如下，
-![](../../pics/yarn.webp)
+yarn架构图如下，   
+![](../../pics/yarn.png)
 
 将JobTracker和TaskTracker进行分离，它由下面几大构成组件：   
 a. 一个全局的资源管理器 ResourceManager   
@@ -113,7 +115,7 @@ RM有两个重要的组件：Scheduler和ApplicationsManager。
 	- 与NM通信以启动/停止任务   
 	- 监控所有任务的运行状态，并在任务失败时重新申请资源以重启任务   
 
-- **NodeManager(NM)**
+- **NodeManager(NM)**   
 NM是每个节点上的资源和任务管理器，一方面，它会定时地向RM汇报本节点上的资源使用情况和各个Container的运行状态；另一方面，它接收并处理来自AM的Container启动/停止等各种请求。
 
 > Container是YARN中的资源抽象，它封装了某个节点上的多维度资源，如内存、CPU、磁盘、网络等，当AM向RM申请资源时，RM为AM返回的资源便是用Container表示。YARN会为每个任务分配一个Container，且该任务只能使用该Container中描述的资源。
