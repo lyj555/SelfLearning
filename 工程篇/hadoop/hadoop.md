@@ -55,7 +55,6 @@ MapReduce是一个快速、高效、简单用于编写并行处理大数据程�
 ![](../../pics/map_reduce.jpg)
 
 #### 1.2.1 Shuffle优化
-
 ![](../../pics/hadoop_shuffle.jpg)
 
 我们从这个例子的图中可以看出，每个 map function 会输出一组 key value pair, Shuffle 阶段需要从所有 map host 上把相同的 key 的 key value pair 组合在一起，组合后传给 reduce host, 作为输入进入 reduce function 里。   
