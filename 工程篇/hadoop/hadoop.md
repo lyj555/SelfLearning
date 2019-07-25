@@ -52,9 +52,7 @@ MapReduce是一个快速、高效、简单用于编写并行处理大数据程�
 处理shuffle后的结果，产出最终的结算结果
 
 下面是MapReduce模型架构，   
-
 ![](../../pics/map_reduce.jpg)
-
 
 #### 1.2.1 Shuffle优化
 
