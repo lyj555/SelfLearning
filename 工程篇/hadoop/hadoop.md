@@ -57,6 +57,7 @@ MapReduce是一个快速、高效、简单用于编写并行处理大数据程�
 
 
 #### 1.2.1 Shuffle优化
+
 ![](../../pics/hadoop_shuffle.jpg)
 
 我们从这个例子的图中可以看出，每个 map function 会输出一组 key value pair, Shuffle 阶段需要从所有 map host 上把相同的 key 的 key value pair 组合在一起，组合后传给 reduce host, 作为输入进入 reduce function 里。   
@@ -217,13 +218,13 @@ set hive.optimize.skewjoin=true;--如果是join 过程出现倾斜 应该设置�
     ```
     set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat
     ```
-> 合并文件数由mapred.max.split.size限制的大小决定
+    > 合并文件数由mapred.max.split.size限制的大小决定
 
-	- 额外的MR Job打包输入小文件   
-    ```
-    hive.merge.mapredfiles = false 是否合并 Reduce 输出文件，默认为 False 
-    hive.merge.size.per.task = 256*1000*1000 合并文件的大小 
-    ```
+        - 额外的MR Job打包输入小文件   
+        ```
+        hive.merge.mapredfiles = false 是否合并 Reduce 输出文件，默认为 False 
+        hive.merge.size.per.task = 256*1000*1000 合并文件的大小 
+        ```
 
 - 输出小文件问题   
 
@@ -246,6 +247,7 @@ set hive.optimize.skewjoin=true;--如果是join 过程出现倾斜 应该设置�
 （2）mapred.min.split.size.per.rack 一个交换机下split至少的大小   
 （3）mapred.max.split.size 一个split最大的大小   
 参考[链接](https://www.cnblogs.com/xd502djj/p/3799432.html)
+> 上面两种具体的方式未作具体的考证，暂且记录
 
 ### 2.5 Hive Shuffle优化
 
