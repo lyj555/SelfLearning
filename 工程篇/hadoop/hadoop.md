@@ -3,7 +3,7 @@
 # Hadoop
 
 Hadoop是Apache软件基金会旗下的一个开源分布式平台。Hadoop以分布式文件系统HDFS(Hadoop Distributed File System)和MapReduce为核心，为用户提供了系统底层细节透明的分布式基础架构。
-Hadoop生态系统主要包括Hive，Hbase，Spark，Storm，Mahout，Flume，ZooKeeper，Pig，Sqoop，Shark，Phoenix，Tez，Ambari。架构图如下
+Hadoop生态系统主要包括Hive，Hbase，Spark，Storm，Mahout，Flume，ZooKeeper，Pig，Sqoop，Shark，Phoenix，Tez，Ambari。架构图如下，
 ![](../../pics/hadoop_system.png)
 
 ## 1. Hadoop基础 
@@ -19,8 +19,7 @@ NameNode是一个中心服务器，负责管理文件系统的名字空间(names
 存储data block的机器叫做DataNodes，在读写过程中，DataNode负责直接把用户读取的block传给client，也负责直接接收用户写的文件。
 
 HDFS整体架构图，   
-
-![](../../pics/hdfs.jpg)
+![HDFS整体架构图](../../pics/hdfs.jpg)
 
 HDFS数据上传过程，
 1) Client端发送一个添加文件到HDFS的请求给NameNode；
@@ -51,11 +50,12 @@ MapReduce是一个快速、高效、简单用于编写并行处理大数据程�
 - Reduce阶段   
 处理shuffle后的结果，产出最终的结算结果
 
-下面是MapReduce模型架构，   
-![](../../pics/map_reduce.jpg)
+下面是MapReduce模型架构图，   
+![MapReduce模型架构图](../../pics/map_reduce.jpg)
 
 #### 1.2.1 Shuffle优化
-![](../../pics/hadoop_shuffle.jpg)
+下面是word count的MapReduce架构图，   
+![MapReduce架构图](../../pics/hadoop_shuffle.jpg)
 
 我们从这个例子的图中可以看出，每个 map function 会输出一组 key value pair, Shuffle 阶段需要从所有 map host 上把相同的 key 的 key value pair 组合在一起，组合后传给 reduce host, 作为输入进入 reduce function 里。   
 所有map function产生的key可能有成百上千，经过shuffle组合key工作后，依然是相同的数目，而负责reduce host可能只有几十个，几百个，那 Hadoop 的分配 key value pair 的策略是什么？
