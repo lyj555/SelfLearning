@@ -185,7 +185,7 @@ set hive.enforce.sorting=true;
 
   - hive.exec.reducers.max（每个任务最大的reduce数，默认为999）
 
-    > 计算reducer数的公式很简单N=min( hive.exec.reducers.max ，总输入数据量/ hive.exec.reducers.bytes.per.reducer )，只有一个reduce的场景（没有group by的汇总，order by和笛卡尔积）
+    > 计算reducer数的公式N=min( hive.exec.reducers.max ，总输入数据量/ hive.exec.reducers.bytes.per.reducer )，只有一个reduce的场景（没有group by的汇总，order by和笛卡尔积）
 
 #### 2.2.2 数据倾斜优化
 
@@ -201,7 +201,7 @@ set hive.enforce.sorting=true;
 
   join/group by/count distinct 三种操作易导致reduce task中数据发生倾斜
 
-对于Map端的数据倾斜，多可以通过map task任务数量来控制，此处可以参考上面[MapReduce架构](#### 2.2.1 MapReduce架构) 
+对于Map端的数据倾斜，多可以通过map task任务数量来控制，此处可以参考上面**Map优化**
 
 针对Reduce端导致的数据倾斜，说先需要明确join/group by/count distinct的[MapReduce执行方案](https://tech.meituan.com/2014/02/12/hive-sql-to-mapreduce.html)，
 
@@ -209,7 +209,7 @@ set hive.enforce.sorting=true;
 
   - key中空值或者异常值特别多
 
-    针对此种情况，可以提前将空值和异常值过滤，也可以将空值用随机数字替代，可以随机分配到不同的reduce task中
+    针对此种情况，可以提前将空值和异常值过滤，也可以将空值用随机数字替代，随机分配到不同的reducer中
 
   - 大表和小表（小于1000条记录）join
 
@@ -249,7 +249,7 @@ set hive.enforce.sorting=true;
   select count(1) from (select id from tablename group by id) tmp;
   ```
 
-> 以上三种方式主要导致的数据倾斜均发生在reduce端，所以通用的一种设置方式就是增加reduce task的个数，参考MapReduce架构优化部分
+> 以上三种方式主要导致的数据倾斜均发生在reduce端，所以通用的一种设置方式就是增加reduce task的个数，参考上面的**Reduce优化**部分
 
 ### 2.3 Hive job优化
 
@@ -270,34 +270,34 @@ set hive.enforce.sorting=true;
 - 并行化执行   
 每个查询被Hive转化为多个阶段，有些阶段关联性不大，则可以并行化执行，减少执行时间
 
-  ```
+  ```sql
     set hive.exec.parallel=true;
     set hive.exec.parallel.thread.number=8;
-    ```
+  ```
   
 - 小文件问题   
 	
   - 输入小文件
   
-    若输入的数据（主要为map端）中包含很多小文件可以考虑将其合并，这中设置和map task设置相关联
-  
-  ```sql
-    set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
-    -- 以下三个设置和map task个数设置一样
-    set mapred.max.split.size=256000000;
-    set mapred.min.split.size.per.node=256000000;
-    set mapred.min.split.size.per.rack=256000000;
-  ```
+    若输入的数据（主要为map端）中包含很多小文件可以考虑将其合并，这和map task设置基本一样
+    
+    ```sql
+      set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+      -- 以下三个设置和map task个数设置一样
+      set mapred.max.split.size=256000000;
+      set mapred.min.split.size.per.node=256000000;
+      set mapred.min.split.size.per.rack=256000000;
+    ```
 	
 	- 输出小文件
 	  
-	  如果设置的reduce task个数较多，则容易导致存在较多的小文件，此时可以考虑将小文件合并
+    如果设置的reduce task个数较多，则容易导致存在较多的小文件，此时可以考虑将小文件合并
 	  
 	  ```sql
-	-- 相当于额外启动一个MR任务，来合并输出的小文件
-	  set hive.merge.mapredfiles = false; --是否合并 reduce 输出文件，默认为 false 
-	  set hive.merge.size.per.task = 256*1000*1000; --合并文件的大小
-	  set hive.merge.smallfiles.avgsize=1024000000; --当输出文件的平均大小小于1GB时，启动一个独立的map-reduce任务进行文件merge
+	  -- 相当于额外启动一个MR任务，来合并输出的小文件
+	    set hive.merge.mapredfiles = false; --是否合并 reduce 输出文件，默认为 false 
+	    set hive.merge.size.per.task = 256*1000*1000; --合并文件的大小
+	    set hive.merge.smallfiles.avgsize=1024000000; --当输出文件的平均大小小于1GB时，启动一个独立的map-reduce任务进行文件merge
 	  ```
 
 ### 2.4 (order/sort/distribute/cluster) by异同
