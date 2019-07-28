@@ -288,10 +288,10 @@ set hive.enforce.sorting=true;
       set mapred.min.split.size.per.rack=256000000;
     ```
 	
-	- 输出小文件
-	  
+  - 输出小文件
+	
     如果设置的reduce task个数较多，则容易导致存在较多的小文件，此时可以考虑将小文件合并
-	  
+	
 	  ```sql
 	  -- 相当于额外启动一个MR任务，来合并输出的小文件
 	    set hive.merge.mapredfiles = false; --是否合并 reduce 输出文件，默认为 false 
