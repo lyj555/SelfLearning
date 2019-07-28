@@ -138,12 +138,11 @@ NM是每个节点上的资源和任务管理器，一方面，它会定时地向
 > 两者的区别主要是插入数据时，静态分区需要指定分区的取值，而动态分区不需要指定，会自动根据列的取值进行分区（当分区级数多且数据量大时方便）
 
 #### 2.1.2 分桶
-```
+
+```sql
 set hive.enforce.bucketing=true;
 set hive.enforce.sorting=true;
 ```
-按照分桶字段的hash值去模除以分桶的个数，只能mapreduce中间结果insert到分桶表中（set mapreduce.job.reduces = num;）
-
 分桶的主要优势为两个，一个是方便抽样，再一个是提高join查询效率(相同分桶表，桶数是倍数关系)
 
 > 分桶和分区的区别，参考[链接](https://blog.csdn.net/weixin_39393048/article/details/82530254)，分区是针对hdfs目录的操作（粗粒度），分桶是针对文件的操作（细粒度）
@@ -158,32 +157,32 @@ set hive.enforce.sorting=true;
 
 - Map优化
 
-  - mapred.min.split.size.per.node， 一个节点上split的至少的大小   
+  - `mapred.min.split.size.per.node`， 一个节点上split的至少的大小   
 
-  - mapred.min.split.size.per.rack 一个交换机下split至少的大小   
+  - `mapred.min.split.size.per.rack` 一个交换机下split至少的大小   
 
-  - mapred.max.split.size 一个split最大的大小   
+  - `mapred.max.split.size` 一个split最大的大小   
 
     参考[链接](https://www.cnblogs.com/xd502djj/p/3799432.html)
 
 - Shuffle优化
 
-  - io.sort.mb 这个参数控制 map 端 memory buffer 大小，越大每次 map 要 spill 的 file 就越大，总 spill file 个数越少; 所以如果你的 Hadoop Job map output 很多，适当增加这个参数有助于 performance；
-  - io.sort.spill.percent 这个参数控制 map memory buffer 到达多少比例时开始 spill. 我们知道 spill 是写 IO 操作，所以需要时间。如果 percentage 太高，有可能当 spill 还没有完成时，map output 已经把 memory buffer 填满，这样影响 performance；同样，太低会造成太多 spill fie;
-  - tasktracker.http.threads 控制 map 端有多少个 thread 负责向 reduce 传送 map output. 本着并行计算的原则，可以适当调高;
-  - mapred.reduce.parallel.copies 这个参数控制 reduce 端有多少个 thread 去 copy map output. 本着并行计算的原则，可以适当调高;
-  - mapred.job.reduce.input.buffer.percent 控制 reduce host 上 JVM 中用于 merge map output 的比例。可以适当调高;
-  - io.sort.factor控制 reduce 端同时被 sort 的文件的个数。我们说 reduce 端 file sor t分批进行，这个参数就是每批有多少个。如果内存大，可以适当增加，以减少 sort 批次。
+  - `io.sort.mb` 这个参数控制 map 端 memory buffer 大小，越大每次 map 要 spill 的 file 就越大，总 spill file 个数越少; 所以如果你的 Hadoop Job map output 很多，适当增加这个参数有助于 performance；
+  - `io.sort.spill.percent` 这个参数控制 map memory buffer 到达多少比例时开始 spill. 我们知道 spill 是写 IO 操作，所以需要时间。如果 percentage 太高，有可能当 spill 还没有完成时，map output 已经把 memory buffer 填满，这样影响 performance；同样，太低会造成太多 spill fie;
+  - `tasktracker.http.threads` 控制 map 端有多少个 thread 负责向 reduce 传送 map output. 本着并行计算的原则，可以适当调高;
+  - `mapred.reduce.parallel.copies` 这个参数控制 reduce 端有多少个 thread 去 copy map output. 本着并行计算的原则，可以适当调高;
+  - `mapred.job.reduce.input.buffer.percent` 控制 reduce host 上 JVM 中用于 merge map output 的比例。可以适当调高;
+  - `io.sort.factor`控制 reduce 端同时被 sort 的文件的个数。我们说 reduce 端 file sor t分批进行，这个参数就是每批有多少个。如果内存大，可以适当增加，以减少 sort 批次。
 
 - Reduce优化
 
   reduce数量由以下三个参数决定，
 
-  - mapred.reduce.tasks(强制指定reduce的任务数量)
+  - `mapred.reduce.tasks` 强制指定reduce的任务数量
 
-  - hive.exec.reducers.bytes.per.reducer（每个reduce任务处理的数据量，默认为1000^3=1G）
+  - `hive.exec.reducers.bytes.per.reducer`每个reduce任务处理的数据量，默认为1000^3=1G
 
-  - hive.exec.reducers.max（每个任务最大的reduce数，默认为999）
+  - `hive.exec.reducers.max`每个任务最大的reduce数，默认为999
 
     > 计算reducer数的公式N=min( hive.exec.reducers.max ，总输入数据量/ hive.exec.reducers.bytes.per.reducer )，只有一个reduce的场景（没有group by的汇总，order by和笛卡尔积）
 
@@ -199,13 +198,13 @@ set hive.enforce.sorting=true;
 
 - Reduce端
 
-  join/group by/count distinct 三种操作易导致reduce task中数据发生倾斜
+  `join`/`group by`/`count distinct` 三种操作易导致reduce task中数据发生倾斜
 
 对于Map端的数据倾斜，多可以通过map task任务数量来控制，此处可以参考上面**Map优化**
 
-针对Reduce端导致的数据倾斜，说先需要明确join/group by/count distinct的[MapReduce执行方案](https://tech.meituan.com/2014/02/12/hive-sql-to-mapreduce.html)，
+针对Reduce端导致的数据倾斜，说先需要明确`join`/`group by`/`count distinct`的[MapReduce执行方案](https://tech.meituan.com/2014/02/12/hive-sql-to-mapreduce.html)，
 
-- join倾斜原因及优化
+- `join`倾斜原因及优化
 
   - key中空值或者异常值特别多
 
@@ -225,9 +224,9 @@ set hive.enforce.sorting=true;
     -- 可以就按官方默认的1个reduce 只处理1G 的算法，那么skew_key_threshold= 1G/平均行长.或者默认直接设成250000000 (差不多算平均行长4个字节)
     ```
 
-- group by倾斜原因及优化
+- `group by`倾斜原因及优化
 
-  group by中数据倾斜多为key值分布不均匀导致，可以设置的参数，如下
+  `group by`中数据倾斜多为key值分布不均匀导致，可以设置的参数，如下
 
   ```sql
   set hive.map.aggr=true;  --相当于在map阶段对数据进行提前预聚合
@@ -236,7 +235,7 @@ set hive.enforce.sorting=true;
   set hive.groupby.skewindata=true; --控制生成两个MR Job,第一个MR Job Map的输出结果随机分配到reduce做次预汇总,减少某些key值条数过多某些key条数过小造成的数据倾斜问题
   ```
 
-- count distinct 倾斜原因及优化
+- `count distinct`倾斜原因及优化
 
   主要是key值的分布不均匀，可以更换sql表达方式，
 
@@ -263,7 +262,7 @@ set hive.enforce.sorting=true;
     - 小表要注意放在join的左边，否则会引起磁盘和内存的大量消耗
     - 若小表数据极少，考虑使用map join
 
-- 如果union all的部分个数大于2，或者每个union部分数据量大，应该拆成多个insert into 语句，实际测试过程中，执行时间能提升50%
+- 如果`union all`的部分个数大于2，或者每个union部分数据量大，应该拆成多个`insert into`语句，实际测试过程中，执行时间能提升50%
 
 - 写SQL要先了解数据本身的特点，如果有join ,group操作的话，要注意是否会有数据倾斜，优化部分参考上面的部分
 
@@ -302,19 +301,19 @@ set hive.enforce.sorting=true;
 
 ### 2.4 (order/sort/distribute/cluster) by异同
 
-- order by
+- `order by`
 
-  order by是全局排序，相当于所有的数据在一个reduce端完成，显然效率较慢
+  `order by`是全局排序，相当于所有的数据在一个reduce端完成，显然效率较慢
 
-- sort by
+- `sort by`
 
-  sort by是局部排序，相当于对每个reduce task中的数据进行排序
+  `sort by`是局部排序，相当于对每个reduce task中的数据进行排序
 
-- distribute by
+- `distribute by`
 
-  hive中（distribute by + “表中字段”）关键字控制map输出结果的分发,相同字段的map输出会发到一个 reduce节点去处理。sort by为每一个reducer产生一个排序文件，他俩一般情况下会结合使用。
+  hive中（`distribute by` + “表中字段”）关键字控制map输出结果的分发,相同字段的map输出会发到一个 reduce节点去处理。sort by为每一个reducer产生一个排序文件，他俩一般情况下会结合使用。
 
-- cluster by
+- `cluster by`
 
   相当于是distribute by sort by的结合，不过只能是降序，不能指定 `desc`和`asc`参数
 
