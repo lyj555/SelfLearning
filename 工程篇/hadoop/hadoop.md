@@ -260,7 +260,14 @@ set hive.enforce.sorting=true;
 - join操作   
 
     - 小表要注意放在join的左边，否则会引起磁盘和内存的大量消耗
-    - 若小表数据极少，考虑使用map join
+
+    - 若小表数据极少，考虑使用mapjoin的语法
+
+    - 在map端join
+
+      两个表是一个比较小的表和一个特别大的表的时候，我们把比较小的table直接放到内存中去，这里的join并不会涉及reduce操作，map端join的优势就是在于没有shuffle，***在本质上mapjoin根本就没有运行MR进程，仅仅是在内存就进行了两个表的联合***，如下设置，
+
+      `set hive.auto.convert.join=true;`
 
 - 如果`union all`的部分个数大于2，或者每个union部分数据量大，应该拆成多个`insert into`语句，实际测试过程中，执行时间能提升50%
 
