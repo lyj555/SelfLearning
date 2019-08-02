@@ -127,164 +127,205 @@ NM是每个节点上的资源和任务管理器，一方面，它会定时地向
 
 #### 2.1.1 分区
 - 动态分区   
-```
-set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
-```
+
+  ```sql
+  set hive.exec.dynamic.partition=true;
+  set hive.exec.dynamic.partition.mode=nonstrict;
+  ```
 - 静态分区   
+
+  插入数据时，需要指定分区的具体取值。
 > 两者的区别主要是插入数据时，静态分区需要指定分区的取值，而动态分区不需要指定，会自动根据列的取值进行分区（当分区级数多且数据量大时方便）
 
 #### 2.1.2 分桶
-```
+
+```sql
 set hive.enforce.bucketing=true;
 set hive.enforce.sorting=true;
 ```
-按照分桶字段的hash值去模除以分桶的个数，只能mapreduce中间结果insert到分桶表中（set mapreduce.job.reduces = num;）
-
+分桶的主要优势为两个，一个是方便抽样，再一个是提高join查询效率(相同分桶表，桶数是倍数关系)
 
 > 分桶和分区的区别，参考[链接](https://blog.csdn.net/weixin_39393048/article/details/82530254)，分区是针对hdfs目录的操作（粗粒度），分桶是针对文件的操作（细粒度）
 
-分桶的主要优势为两个，一个是方便抽样，再一个是提高join查询效率(相同分桶表，桶数是倍数关系)
-
 ### 2.2 Hive查询操作优化
 
-#### 2.2.1 join优化
-```
-hive.optimize.skewjoin=true;如果是join过程中出现倾斜 应该设置为true
-set hive.skewjoin.key=100000; 这个是join的键对应的记录条数，超过这个值则会进行优化
+个人理解，优化分主要分两大部分，第一部分为架构方面优化，第二部分数据倾斜的优化
 
-hive.skewjoin.mapjoin.map.tasks 默认10000
-hive.skewjoin.mapjoin.min.split 默认33554432
-```
+#### 2.2.1 MapReduce架构
 
-#### 2.2.2 group by
-```
-hive.group.skewindata=true; 如果是group by过程出现倾斜，应该设置为true
-set hive.groupby.mapaggr.checkinterval=100000; 这个是group的键对应的记录条数超过这个值则会进行优化
-```
+显然MapReduce架构层面分为三部分，分别为Map，Shuffle和Reduce，核心是根据不同的任务设置合理的Map和Reduce个数，尤其是Reduce的个数，参考[hive中控制map和reduce数量](https://blog.csdn.net/zhong_han_jun/article/details/50814246)，写的非常不错，有例子说明。
 
+- Map优化
 
-#### 2.2.3 count distinct
-```
-select count(distinct id) from tablename;
+  - `mapred.min.split.size.per.node`， 一个节点上split的至少的大小   
 
-after optimize
+  - `mapred.min.split.size.per.rack` 一个交换机下split至少的大小   
 
-select count(1) from (select distinct id from tablename) tmp;
-select count(1) from (select id from tablename group by id) tmp;
-```
+  - `mapred.max.split.size` 一个split最大的大小   
+
+    参考[链接](https://www.cnblogs.com/xd502djj/p/3799432.html)
+
+- Shuffle优化
+
+  - `io.sort.mb` 这个参数控制 map 端 memory buffer 大小，越大每次 map 要 spill 的 file 就越大，总 spill file 个数越少; 所以如果你的 Hadoop Job map output 很多，适当增加这个参数有助于 performance；
+  - `io.sort.spill.percent` 这个参数控制 map memory buffer 到达多少比例时开始 spill. 我们知道 spill 是写 IO 操作，所以需要时间。如果 percentage 太高，有可能当 spill 还没有完成时，map output 已经把 memory buffer 填满，这样影响 performance；同样，太低会造成太多 spill fie;
+  - `tasktracker.http.threads` 控制 map 端有多少个 thread 负责向 reduce 传送 map output. 本着并行计算的原则，可以适当调高;
+  - `mapred.reduce.parallel.copies` 这个参数控制 reduce 端有多少个 thread 去 copy map output. 本着并行计算的原则，可以适当调高;
+  - `mapred.job.reduce.input.buffer.percent` 控制 reduce host 上 JVM 中用于 merge map output 的比例。可以适当调高;
+  - `io.sort.factor`控制 reduce 端同时被 sort 的文件的个数。我们说 reduce 端 file sor t分批进行，这个参数就是每批有多少个。如果内存大，可以适当增加，以减少 sort 批次。
+
+- Reduce优化
+
+  reduce数量由以下三个参数决定，
+
+  - `mapred.reduce.tasks` 强制指定reduce的任务数量
+
+  - `hive.exec.reducers.bytes.per.reducer`每个reduce任务处理的数据量，默认为1000^3=1G
+
+  - `hive.exec.reducers.max`每个任务最大的reduce数，默认为999
+
+    > 计算reducer数的公式N=min( hive.exec.reducers.max ，总输入数据量/ hive.exec.reducers.bytes.per.reducer )，只有一个reduce的场景（没有group by的汇总，order by和笛卡尔积）
+
+#### 2.2.2 数据倾斜优化
+
+从MapReduce的结构可以看出，数据倾斜主要存在Map端（每个map task的数据集倾斜）和Reduce端（每个reduce task数据发生倾斜）的数据中，具体表现，
+
+- Map端
+
+  - key值分布不均匀
+  - 业务数据本身的特点
+  - 建表时考虑不周全
+
+- Reduce端
+
+  `join`/`group by`/`count distinct` 三种操作易导致reduce task中数据发生倾斜
+
+对于Map端的数据倾斜，多可以通过map task任务数量来控制，此处可以参考上面**Map优化**
+
+针对Reduce端导致的数据倾斜，说先需要明确`join`/`group by`/`count distinct`的[MapReduce执行方案](https://tech.meituan.com/2014/02/12/hive-sql-to-mapreduce.html)，
+
+- `join`倾斜原因及优化
+
+  - key中空值或者异常值特别多
+
+    针对此种情况，可以提前将空值和异常值过滤，也可以将空值用随机数字替代，随机分配到不同的reducer中
+
+  - 大表和小表（小于1000条记录）join
+
+    可以考虑使用[mapjoin的方式](https://www.jianshu.com/p/859e39475832)
+
+  - key值分布不均匀
+
+    可以设置参数
+
+    ```sql
+    set hive.optimize.skewjoin = true;
+    set hive.skewjoin.key = skew_key_threshold -- (表示join的key对应的行数，如果超过这个值就会拆分，default = 100000)
+    -- 可以就按官方默认的1个reduce 只处理1G 的算法，那么skew_key_threshold= 1G/平均行长.或者默认直接设成250000000 (差不多算平均行长4个字节)
+    ```
+
+- `group by`倾斜原因及优化
+
+  `group by`中数据倾斜多为key值分布不均匀导致，可以设置的参数，如下
+
+  ```sql
+  set hive.map.aggr=true;  --相当于在map阶段对数据进行提前预聚合
+  set hive.groupby.mapaggr.checkinterval = 100000; -- (默认)执行聚合当超过此条数
+  set hive.map.aggr.hash.min.reduction=0.5; -- 默认值,如果hash表的容量与输入行数之比超过这个数，那么map端的hash聚合将被关闭，默认是0.5，设置为1可以保证hash聚合永不被关闭；
+  set hive.groupby.skewindata=true; --控制生成两个MR Job,第一个MR Job Map的输出结果随机分配到reduce做次预汇总,减少某些key值条数过多某些key条数过小造成的数据倾斜问题
+  ```
+
+- `count distinct`倾斜原因及优化
+
+  主要是key值的分布不均匀，可以更换sql表达方式，
+
+  ```sql
+  select count(distinct id) from tablename;
+  
+  -- after optimize
+  
+  select count(1) from (select distinct id from tablename) tmp;
+  select count(1) from (select id from tablename group by id) tmp;
+  ```
+
+> 以上三种方式主要导致的数据倾斜均发生在reduce端，所以通用的一种设置方式就是增加reduce task的个数，参考上面的**Reduce优化**部分
 
 ### 2.3 Hive job优化
 
 一些基本原则
 - 尽量尽早地过滤数据，减少每个阶段的数据量,对于分区表要加分区，同时只选择需要使用到的字段
+
 - 尽量原子化操作，尽量避免一个SQL包含复杂逻辑
-- join操作   小表要注意放在join的左边，否则会引起磁盘和内存的大量消耗
-- 如果union all的部分个数大于2，或者每个union部分数据量大，应该拆成多个insert into 语句，实际测试过程中，执行时间能提升50%
-- 写SQL要先了解数据本身的特点，如果有join ,group操作的话，要注意是否会有数据倾斜
 
-```
-set hive.exec.reducers.max=200;
-set mapred.reduce.tasks= 200;---增大Reduce个数
+- join操作   
 
-hive.map.aggr = true 在Map端做combiner,假如map各条数据基本上不一样, 聚合没什么意义，做combiner反而画蛇添足
-set hive.groupby.mapaggr.checkinterval=100000 ;--这个是group的键对应的记录条数超过这个值则会进行分拆,值根据具体数据量设置
+    - 小表要注意放在join的左边，否则会引起磁盘和内存的大量消耗
 
-set hive.groupby.skewindata=true; --如果是group by过程出现倾斜 应该设置为true
-控制生成两个MR Job,第一个MR Job Map的输出结果随机分配到reduce做次预汇总,减少某些key值条数过多某些key条数过小造成的数据倾斜问题
+    - 若小表数据极少，考虑使用mapjoin的语法
 
+    - 在map端join
 
-set hive.skewjoin.key=100000; --这个是join的键对应的记录条数超过这个值则会进行分拆,值根据具体数据量设置
-set hive.optimize.skewjoin=true;--如果是join 过程出现倾斜 应该设置为true
-```
+      两个表是一个比较小的表和一个特别大的表的时候，我们把比较小的table直接放到内存中去，这里的join并不会涉及reduce操作，map端join的优势就是在于没有shuffle，***在本质上mapjoin根本就没有运行MR进程，仅仅是在内存就进行了两个表的联合***，如下设置，
 
-- 注意join的使用   
-若其中有一个表很小使用map join，否则使用普通的reduce join，注意hive会将join前面的表数据装载内存,所以较小的一个表在较大的表之前,减少内存资源的消耗
+      `set hive.auto.convert.join=true;`
+
+- 如果`union all`的部分个数大于2，或者每个union部分数据量大，应该拆成多个`insert into`语句，实际测试过程中，执行时间能提升50%
+
+- 写SQL要先了解数据本身的特点，如果有join ,group操作的话，要注意是否会有数据倾斜，优化部分参考上面的部分
 
 - 并行化执行   
-启动一次job尽可能的多做事情，一个job能完成的事情,不要两个job来做通常来说前面的任务启动可以稍带一起做的事情就一起做了,以便后续的多个任务重用,与此紧密相连的是模型设计,好的模型特别重要.
 每个查询被Hive转化为多个阶段，有些阶段关联性不大，则可以并行化执行，减少执行时间
 
-    ```
+  ```sql
     set hive.exec.parallel=true;
     set hive.exec.parallel.thread.number=8;
+  ```
+  
+- 小文件问题   
+	
+  - 输入小文件
+  
+    若输入的数据（主要为map端）中包含很多小文件可以考虑将其合并，这和map task设置基本一样
+    
+    ```sql
+      set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+      -- 以下三个设置和map task个数设置一样
+      set mapred.max.split.size=256000000;
+      set mapred.min.split.size.per.node=256000000;
+      set mapred.min.split.size.per.rack=256000000;
     ```
+	
+  - 输出小文件
+	
+    如果设置的reduce task个数较多，则容易导致存在较多的小文件，此时可以考虑将小文件合并
+	
+	  ```sql
+	  -- 相当于额外启动一个MR任务，来合并输出的小文件
+	    set hive.merge.mapredfiles = false; --是否合并 reduce 输出文件，默认为 false 
+	    set hive.merge.size.per.task = 256*1000*1000; --合并文件的大小
+	    set hive.merge.smallfiles.avgsize=1024000000; --当输出文件的平均大小小于1GB时，启动一个独立的map-reduce任务进行文件merge
+	  ```
 
-- 输入小文件问题   
-	- job合并输入小文件
-    ```
-    set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat
-    ```
-    > 合并文件数由mapred.max.split.size限制的大小决定
+### 2.4 (order/sort/distribute/cluster) by异同
 
-        - 额外的MR Job打包输入小文件   
-        ```
-        hive.merge.mapredfiles = false 是否合并 Reduce 输出文件，默认为 False 
-        hive.merge.size.per.task = 256*1000*1000 合并文件的大小 
-        ```
+- `order by`
 
-- 输出小文件问题   
+  `order by`是全局排序，相当于所有的数据在一个reduce端完成，显然效率较慢
 
-    ```
-    set hive.merge.smallfiles.avgsize=256000000;当输出文件平均大小小于该值，启动新job合并文件
-    set hive.merge.size.per.task=64000000;合并之后的文件大小
+- `sort by`
 
-    When the average output file size of a job is less than this number, Hive will start an additional map-reduce job to merge the output files into bigger files. This is only done for map-only jobs if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true.
-    ```
+  `sort by`是局部排序，相当于对每个reduce task中的数据进行排序
 
-### 2.4 Hive Map优化
+- `distribute by`
 
-（1）如果想增加map个数，则设置mapred.map.tasks 为一个较大的值。  
-（2）如果想减小map个数，则设置mapred.min.split.size 为一个较大的值。   
-（3）如果输入中有很多小文件，依然想减少map个数，则需要将小文件merger为大文件，然后使用准则2。   
-参考[链接](https://www.jianshu.com/p/af5ff4c3348f)
+  hive中（`distribute by` + “表中字段”）关键字控制map输出结果的分发,相同字段的map输出会发到一个 reduce节点去处理。sort by为每一个reducer产生一个排序文件，他俩一般情况下会结合使用。
 
-另外一个连接建议如下，
-（1）mapred.min.split.size.per.node， 一个节点上split的至少的大小   
-（2）mapred.min.split.size.per.rack 一个交换机下split至少的大小   
-（3）mapred.max.split.size 一个split最大的大小   
-参考[链接](https://www.cnblogs.com/xd502djj/p/3799432.html)
-> 上面两种具体的方式未作具体的考证，暂且记录
+- `cluster by`
 
-### 2.5 Hive Shuffle优化
-
-- io.sort.mb 这个参数控制 map 端 memory buffer 大小，越大每次 map 要 spill 的 file 就越大，总 spill file 个数越少; 所以如果你的 Hadoop Job map output 很多，适当增加这个参数有助于 performance；
-- io.sort.spill.percent 这个参数控制 map memory buffer 到达多少比例时开始 spill. 我们知道 spill 是写 IO 操作，所以需要时间。如果 percentage 太高，有可能当 spill 还没有完成时，map output 已经把 memory buffer 填满，这样影响 performance；同样，太低会造成太多 spill fie;
-- tasktracker.http.threads 控制 map 端有多少个 thread 负责向 reduce 传送 map output. 本着并行计算的原则，可以适当调高;
-- mapred.reduce.parallel.copies 这个参数控制 reduce 端有多少个 thread 去 copy map output. 本着并行计算的原则，可以适当调高;
-- mapred.job.reduce.input.buffer.percent 控制 reduce host 上 JVM 中用于 merge map output 的比例。可以适当调高;
-- io.sort.factor控制 reduce 端同时被 sort 的文件的个数。我们说 reduce 端 file sor t分批进行，这个参数就是每批有多少个。如果内存大，可以适当增加，以减少 sort 批次。
-
-
-### 2.6 Hive Reduce优化
-可以在hive运行sql的时，打印出来，如下：
-```
-Number of reduce tasks not specified. Estimated from input data size: 1
-In order to change the average load for a reducer (in bytes):
-  set hive.exec.reducers.bytes.per.reducer=<number>
-In order to limit the maximum number of reducers:
-  set hive.exec.reducers.max=<number>
-In order to set a constant number of reducers:
-  set mapred.reduce.tasks=<number>
-```
-
-reduce数量由以下三个参数决定，
-
-- mapred.reduce.tasks(强制指定reduce的任务数量)
-
-- hive.exec.reducers.bytes.per.reducer（每个reduce任务处理的数据量，默认为1000^3=1G）
-
-- hive.exec.reducers.max（每个任务最大的reduce数，默认为999）
-
-> 计算reducer数的公式很简单N=min( hive.exec.reducers.max ，总输入数据量/ hive.exec.reducers.bytes.per.reducer )
-
-
-只有一个reduce的场景：
-- 没有group by的汇总   
-- order by   
-- 笛卡尔积   
+  相当于是distribute by sort by的结合，不过只能是降序，不能指定 `desc`和`asc`参数
 
 ## 3. Hadoop生态系统：HBase
+
 一种分布式的、可伸缩的、大数据存储库，支持随机、实时读/写访问。
 
 源自Google的Bigtable论文，发表于2006年11月，传统的关系型数据库是对面向行的数据库。HBase是Google Bigtable克隆版，HBase是一个针对结构化数据的可伸缩、高可靠、高性能、分布式和面向列的动态模式数据库。和传统关系数据库不同，HBase采用了BigTable的数据模型：增强的稀疏排序映射表（Key/Value），其中，键由行关键字、列关键字和时间戳构成。HBase提供了对大规模数据的随机、实时读写访问，同时，HBase中保存的数据可以使用MapReduce来处理，它将数据存储和并行计算完美地结合在一起。 
@@ -311,8 +352,7 @@ HBase 为每个值维护了多级索引,即：”key, column family, column name
 
 ## Reference
 - [五分钟零基础搞懂Hadoop](https://zhuanlan.zhihu.com/p/20176725)
-- [5分钟深入浅出 HDFS
-](https://zhuanlan.zhihu.com/p/20267586)
+- [5分钟深入浅出 HDFS](https://zhuanlan.zhihu.com/p/20267586)
 - [五分钟深入 Hadoop 内核](https://zhuanlan.zhihu.com/p/20176737)
 - [yarn(百度百科)](https://baike.baidu.com/link?url=pKvKqtKFCPVQ7o8P7872cj1unPEYeppXheM_rzon2HchYzWmMpLCByKtFKc9QqSbgd-sTVczzyvU_B-XlbtWk_)
 - [5分钟 Hadoop Shuffle 优化](https://zhuanlan.zhihu.com/p/20261259)
