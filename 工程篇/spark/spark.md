@@ -176,6 +176,8 @@ Spark集群由Driver, Cluster Manager（Standalone,Yarn 或 Mesos），以及Wor
 
   Hadoop集群管理器，部署后可以同时运行MapReduce，Spark，Storm，Hbase等各种任务。
 
+  > 有关Yarn的相关资源管理框架参考`../hadoop/hadoop.md`中介绍
+
 - Mesos
 
   与Yarn最大的不同是Mesos 的资源分配是二次的，Mesos负责分配一次，计算框架可以选择接受或者拒绝。
