@@ -241,9 +241,11 @@ wordOne.reduceByKey(_+_)
 
 ### 2.5 RDD编程
 
-本部分主要介绍RDD相关的code操作，包括RDD的创建、相应的Trasnformation和Action的操作。
+本部分主要介绍RDD相关的code操作，包括RDD的创建、相应的Transformation和Action的操作。
 
-> 主要以pyspark作为示例
+> 主要以pyspark作为示例，整个spark环境基于win10[本地搭建](https://blog.csdn.net/cymy001/article/details/78430892)
+
+#### 2.5.1 创建RDD
 
 
 
