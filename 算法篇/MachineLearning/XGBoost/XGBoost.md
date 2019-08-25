@@ -67,7 +67,7 @@ $$
 $$
 此时$\tilde{L}^{(t)}$可以表示为决策树的评分（由目标函数推导至此，显然可以作为评分），进一步可以利用此式作为决策树**分割点评选的标准**（切分后loss的下降程度），
 $$
-L_{split}=\frac{1}2 \left[ \frac{(\sum_{i \in I_L}g_i)^2}{\sum_{i \in I_L}h_i + \lambda} + \frac{(\sum_{i \in I_R}g_i)^2}{\sum_{i \in I_R}h_i + \lambda} - \frac{(\sum_{i \in I}g_i)^2}{\sum_{i \in I}h_i + \lambda} \right] - \lambda
+L_{split}=\frac{1}2 \left[ \frac{(\sum_{i \in I_L}g_i)^2}{\sum_{i \in I_L}h_i + \lambda} + \frac{(\sum_{i \in I_R}g_i)^2}{\sum_{i \in I_R}h_i + \lambda} - \frac{(\sum_{i \in I}g_i)^2}{\sum_{i \in I}h_i + \lambda} \right] - \gamma
 $$
 其中，$I_L$代表切分后左子节点的样本，$I_R$代表切分后右子节点的样本，$I$代表且分前节点的样本，显然有$I=I_L \cup I_R$
 
