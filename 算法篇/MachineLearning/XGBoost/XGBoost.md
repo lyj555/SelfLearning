@@ -172,7 +172,7 @@ $$
 
 >  具体实现未研究，大致知道有此方面
 
-## 4. Python Package
+## 4. XGBoost Implementation
 
 目前XGBoost的[官方文档](https://xgboost.readthedocs.io/en/latest/)仍在持续更新，整理这篇文章时XGBoost的官文最新版本为0.9.0，记得最早使用XGBoost的时候版本为0.6.0。
 
