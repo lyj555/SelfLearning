@@ -183,3 +183,26 @@ $$
 L(\theta) = \sum_i[ y_i\ln (1+e^{-\hat{y}_i}) + (1-y_i)\ln (1+e^{\hat{y}_i})]
 $$
 相当于去掉sigmoid函数变换前的值，这个作为预测值$\hat{y_i}$，这个之前没有注意到，这种方式相当于统一了逻辑回归和XGBoost损失函数，当然逻辑回归损失进一步走下去的话，就是讲$\hat{y_i}$的表达式带入进入。
+
+- 参数调整
+
+  - Control Overfitting
+
+    - The first way is to directly control model complexity
+
+      This includes `max_depth`, `min_child_weight` and `gamma`
+
+    - The second way is to add randomness to make training robust to noise
+
+      This includes `subsample` and `colsample_bytree`
+
+  - Handle Imbalanced Dataset
+
+    - If you care only about the overall performance metric (AUC) of your prediction
+
+      Balance the positive and negative weights via `scale_pos_weight` Use AUC for evaluation
+
+    - If you care about predicting the right probability
+
+      In such a case, you cannot re-balance the dataset， set parameter `max_delta_step` to a finite number (say 1) to help convergence
+
