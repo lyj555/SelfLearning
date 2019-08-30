@@ -141,6 +141,8 @@
 
 ## 2. NLP相关模型
 
+[这篇文章](https://mp.weixin.qq.com/s?__biz=MzA4MTk3ODI2OA==&mid=2650344227&idx=1&sn=a40c9f90fb58d8a28713d01214f41f00&chksm=87811dd0b0f694c615a4ecad32dceb9cabf425d25f231a1e3df5295807e8d4e9d84730dd7fa7&mpshare=1&scene=1&srcid=&sharer_sharetime=1567043328434&sharer_shareid=e53fc678b87c854a7577418ee1c671ac&pass_ticket=6%2BFt82b20NkDrXw7JtruZMEmpKehLR8Y1SJBjeUyIHfZ%2FAO1GgK5sIACDx8vanDS#rd)提及了NLP的一些主流模型。
+
 - 词向量的表示模型（word embedding）
 
   word2vec，glove，wordRank，fasttext（也可以分类）
@@ -180,6 +182,8 @@
 有关RNN的基础模型，类似LSTM和GRU一再**深度学习篇章**进行了总结，这里不再赘述。主要从Attention和Self-Attention机制入手。
 
 有关Attention的介绍，张俊林老师在[知乎的分享](https://www.zhihu.com/question/68482809/answer/264632289)非常简洁明了，有关Self-Attention和Transformer，[这篇分享](https://mp.weixin.qq.com/s/RLxWevVWHXgX-UcoxDS70w)对Attention Is All You Need这篇论文做了详细的解读，简洁明了。
+
+关于Transformer，本质相当于是一个Seq2Seq模型。
 
 ## 5. Contextual Word Embedding
 
