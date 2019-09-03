@@ -238,9 +238,97 @@ $$
 
 
 
-以机器翻译任务（input：Tom chase Jerry, output: 汤姆追逐杰瑞）为例
+以机器翻译任务（input：Tom chase Jerry, output: 汤姆追逐杰瑞）为例，
+
+在翻译“杰瑞”这个中文单词的时候，分心模型里面的每个英文单词对于翻译目标单词“杰瑞”贡献是相同的，很明显这里不太合理，显然“Jerry”对于翻译成“杰瑞”更重要，但是分心模型是无法体现这一点的，这就是为何说它没有引入注意力的原因。没有引入注意力的模型在输入句子比较短的时候问题不大，但是如果输入句子比较长，此时所有语义完全通过一个中间语义向量来表示，单词自身的信息已经消失，可想而知会丢失很多细节信息，这也是为何要引入注意力模型的重要原因。上面的例子中，如果引入Attention模型的话，应该在翻译“杰瑞”的时候，体现出英文单词对于翻译当前中文单词不同的影响程度，比如给出类似下面一个概率分布值：（Tom,0.3）(Chase,0.2) (Jerry,0.5)，每个英文单词的概率代表了翻译当前单词“杰瑞”时，注意力分配模型分配给不同英文单词的注意力大小。这对于正确翻译目标语单词肯定是有帮助的，因为引入了新的信息。
+
+同理，**目标句子中的每个单词都应该学会其对应的源语句子中单词的注意力分配概率信息**。这意味着在生成每个单词 $y_i$的时候，原先都是相同的中间语义表示$C$会被替换成根据当前生成单词而不断变化的$C_i$。理解Attention模型的关键就是这里，即由固定的中间语义表示$C$换成了根据当前输出单词来调整成加入注意力模型的变化的$C_i$。
+
+增加了注意力模型的Encoder-Decoder框架理解起来如下所示。
+
+![](../../pics/encoder_decoder_with_attention.jpg)
+
+则$y_1,y_2,y_3$的生成过程变为
+$$
+\begin{aligned}
+y_1 &= G(C_1) \\
+y_2 &= G(C_2, y_1) \\
+y_3 &= G(C_3, y_1, y_2)
+\end{aligned}
+$$
+其中每个$C_i$ 可能对应着不同的源语句子单词的注意力分配概率分布，比如对于上面的英汉翻译来说，其对应的信息可能如下：
+
+![](../../pics/nlp_example.jpg)
+
+其中，f2函数代表Encoder对输入英文单词的某种变换函数，比如如果Encoder是用的RNN模型的话，这个f2函数的结果往往是某个时刻输入$x_i$后隐层节点的状态值；g代表Encoder根据单词的中间表示合成整个句子中间语义表示的变换函数，一般的做法中，g函数就是对构成元素加权求和，即下列公式：
+$$
+C_i = \sum_{j=1}^{L_x} a_{ij} \cdot h_j
+$$
+其中，$L_x$代表输入句子Source的长度，$a_{ij}$代表在Target输出第$i$个单词时Source输入句子中第j个单词的注意力分配系数，而$h_j$则是Source输入句子中第$j$个单词的语义编码。以上面的例子来看，$L_x$显然为3，$i$代表“汤姆”，j=1,2,3分别代表Tom, Chase, Jerry, $a_{ij}$表示“汤姆”和单词Tom, Chase, Jerry的关联程度，分别取值为0.6, 0.2, 0.2; $h_j$表示每个单词的语义编码。
+
+- 注意力分配概率分布值的确定（$a_{ij}$的确定）
+
+  以RNN模型为例，下图是采用RNN模型作为Encoder和Decoder的架构，无attention机制，如下，
+
+  ![](../../pics/encoder_decoder_no_attention.jpg)
+
+  引入attention机制后，可以表述为，
+
+  ![](../../pics/encoder_decoder_with_rnn_attention.jpg)
+  
+  对于采用RNN的Decoder来说，在时刻$i$，如果要生成$y_i$ 单词，我们是可以知道Target在生成$y_i$ 之前的时刻i-1时，隐层节点$i-1$时刻的输出值$H_{i-1}$的，而我们的目的是要计算生成$y_i$ 时输入句子中的单词“Tom”、“Chase”、“Jerry”对$y_i$来说的注意力分配概率分布，那么可以用Target输出句子$i-1$时刻的隐层节点状态$H_{i-1}$去一一和输入句子Source中每个单词对应的RNN隐层节点状态$h_j$进行对比，即通过函数$F(h_j, H_{i-1})$来获得目标单词yi和每个输入单词对应的对齐可能性，这个$F$函数在不同论文里可能会采取不同的方法，然后函数$F$的输出经过Softmax进行归一化就得到了符合概率分布取值区间的注意力分配概率分布数值。
+  
+  **绝大多数Attention模型都是采取上述的计算框架来计算注意力分配概率分布信息，区别只是在F的定义上可能有所不同。**一般在自然语言处理应用里会把Attention模型看作是输出Target句子中某个单词和输入Source句子每个单词的对齐模型。
 
 #### 4.1.3 Attention本质思想
+
+如果把Attention机制从上面讲述例子中的Encoder-Decoder框架中剥离，并进一步做抽象，可以更容易看懂Attention机制的本质思想，如下，
+
+![](../../pics/attention.jpg)
+
+在上图中，我们输入Source构成元素想象成是由一系列的<Key,Value>数据对构成，此时给定Target中的某个元素Query，通过计算Query和各个Key的相似性或者相关性，得到每个Key对应Value的权重系数，然后对Value进行加权求和，即得到了最终的Attention数值。**所以本质上Attention机制是对Source中元素的Value值进行加权求和，而Query和Key用来计算对应Value的权重系数。**
+
+即可以将其本质思想改写为如下公式：
+$$
+\rm{Attention}(Query, Source)=\sum_{i=1}^{L_x}Similarity(Query, Key_i)*Value_i
+$$
+其中$L_x=||\rm{Source}||$代表输入Source的长度。
+
+在上面列举的例子中，此时Key和Value是一样的，都是指$h_j$。
+
+当然，从概念上理解，**把Attention仍然理解为从大量信息中有选择地筛选出少量重要信息并聚焦到这些重要信息上，忽略大多不重要的信息**，这种思路仍然成立。聚焦的过程体现在权重系数的计算上，权重越大越聚焦于其对应的Value值上，即权重代表了信息的重要性，而Value是其对应的信息。
+
+> Attention另外一种解释，也可以将Attention机制看作一种软寻址（Soft Addressing）:Source可以看作存储器内存储的内容，元素由地址Key和值Value组成，当前有个Key=Query的查询，目的是取出存储器中对应的Value值，即Attention数值。通过Query和存储器内元素Key的地址进行相似性比较来寻址，之所以说是软寻址，指的不像一般寻址只从存储内容里面找出一条内容，而是可能从每个Key地址都会取出内容，取出内容的重要性根据Query和Key的相似性来决定，之后对Value进行加权求和，这样就可以取出最终的Value值，也即Attention值。
+
+**attention的计算过程**
+
+可以将其计算过程大致抽象为三个过程，如下图，
+
+![](../../pics/attention_compute.jpg)
+
+- 第一阶段（根据Query和Key计算两者的相似性或者相关性）
+
+  此阶段需要衡量$\rm{Query}$和$Key_i$的相关性，衡量的方式有多种，
+
+  ![](../../pics/attention_sim.jpg)
+
+- 第二阶段（第一阶段的的分值进行归一化处理）
+
+  对第一阶段得出的值进行归一化，往往采用Softmax方式，
+  $$
+  a_i = Softmax(Sim_i)=\frac{e^{Sim_i}}{\sum_{j=1}^{L_x}e^{Sim_j}}
+  $$
+
+- 第三阶段（根据权重系数对Value进行加权求和）
+
+  根据第二阶段得出的权重系数，对Value值进行加权求和即可，
+  $$
+  Attention(Query, Source)=\sum_{i=1}^{L_x}a_i \cdot \rm{Value}_i
+  $$
+
+### 4.2 Self-Attention
+
+Self Attention也经常被称为intra Attention（内部Attention）,在一般任务的Encoder-Decoder框架中，输入Source和输出Target内容是不一样的，比如对于英-中机器翻译来说，Source是英文句子，Target是对应的翻译出的中文句子，Attention机制发生在Target的元素Query和Source中的所有元素之间。而Self Attention顾名思义，**指的不是Target和Source之间的Attention机制，而是Source内部元素之间或者Target内部元素之间发生的Attention机制**，也可以理解为Target=Source这种特殊情况下的注意力计算机制。其具体计算过程和上面的方式完全一致，只是计算对象发生了变化而已，
 
 
 
