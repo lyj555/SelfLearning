@@ -332,6 +332,48 @@ Self Attention也经常被称为intra Attention（内部Attention）,在一般�
 
 
 
+### 4.2 Transformer
+
+自从Attention机制在提出之后，加入Attention的Seq2Seq模型在各个任务上都有了提升，所以现在的seq2seq模型指的都是结合rnn和attention的模型。传统的基于RNN的Seq2Seq模型难以处理长序列的句子，无法实现并行，并且面临对齐的问题。
+
+所以之后这类模型的发展大多数从三个方面入手：
+
+- input的方向性：单向 -> 双向
+
+- 深度：单层 -> 多层
+
+- 类型：RNN -> LSTM GRU
+
+但是依旧受到一些潜在问题的制约，神经网络需要能够将源语句的所有必要信息压缩成固定长度的向量。这可能使得神经网络难以应付长时间的句子，特别是那些比训练语料库中的句子更长的句子；每个时间步的输出需要依赖于前面时间步的输出，这使得模型没有办法并行，效率低；仍然面临对齐问题。
+
+再然后CNN由计算机视觉也被引入到deep NLP中，CNN不能直接用于处理变长的序列样本但可以实现并行计算。完全基于CNN的Seq2Seq模型虽然可以并行实现，但非常占内存，很多的trick，大数据量上参数调整并不容易。
+
+本篇文章创新点在于**抛弃了之前传统的encoder-decoder模型必须结合cnn或者rnn的固有模式，只用Attention**。文章的主要目的在于减少计算量和提高并行效率的同时不损害最终的实验结果。
+
+#### 4.2.1 模型结构
+
+模型框架图如下，
+
+![](../../pics/transformer.webp)
+
+看上去构造还是比较复杂的，先从大面进行理解，然后一步步细化。Transformer的本质仍然是Seq2Seq的思想，采用了Encoder-Decoder框架，如下所示，
+
+![](../../pics/seq2seq.webp)
+
+论文中提到了Transformer采用了多个Encoder和多个Decoder进行结合，进一步将上图展开后有，
+
+![](../../pics/transformer_encoder_decoder.webp)
+
+也就是说，Encoder的输出，会和每一层的Decoder进行结合。取其中一层（也即上面第一张模型架构图）进行详细的展示（简化版）如下，
+
+![](../../pics/transformer_simply.webp)
+
+上面提及的结果相当于模型中使用的一个Encoder和一个Decoder，相当于是最上面提到transformer模型架构图的简化形式。在Encoder中，对于输入做Self-Attention，然后前馈输出；在Decoder中，同样对输出进行Self-Attention操作，然后对Encoder中的输出和Self-Attention的结果做一个Attention，最终在前向传播。
+
+该部分对整体框架做了大致介绍，接下来对上面提及的结构进行展开。
+
+#### 4.2.2  Scaled Dot-Product Attention
+
 ## 5. Contextual Word Embedding
 
 
