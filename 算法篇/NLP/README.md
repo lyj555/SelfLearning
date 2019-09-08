@@ -326,12 +326,6 @@ $$
   Attention(Query, Source)=\sum_{i=1}^{L_x}a_i \cdot \rm{Value}_i
   $$
 
-### 4.2 Self-Attention
-
-Self Attention也经常被称为intra Attention（内部Attention）,在一般任务的Encoder-Decoder框架中，输入Source和输出Target内容是不一样的，比如对于英-中机器翻译来说，Source是英文句子，Target是对应的翻译出的中文句子，Attention机制发生在Target的元素Query和Source中的所有元素之间。而Self Attention顾名思义，**指的不是Target和Source之间的Attention机制，而是Source内部元素之间或者Target内部元素之间发生的Attention机制**，也可以理解为Target=Source这种特殊情况下的注意力计算机制。其具体计算过程和上面的方式完全一致，只是计算对象发生了变化而已，
-
-
-
 ### 4.2 Transformer
 
 自从Attention机制在提出之后，加入Attention的Seq2Seq模型在各个任务上都有了提升，所以现在的seq2seq模型指的都是结合rnn和attention的模型。传统的基于RNN的Seq2Seq模型难以处理长序列的句子，无法实现并行，并且面临对齐的问题。
@@ -370,9 +364,8 @@ Self Attention也经常被称为intra Attention（内部Attention）,在一般�
 
 上面提及的结果相当于模型中使用的一个Encoder和一个Decoder，相当于是最上面提到transformer模型架构图的简化形式。在Encoder中，对于输入做Self-Attention，然后前馈输出；在Decoder中，同样对输出进行Self-Attention操作，然后对Encoder中的输出和Self-Attention的结果做一个Attention，最终在前向传播。
 
-该部分对整体框架做了大致介绍，接下来对上面提及的结构进行展开。
+该部分对整体框架做了大致介绍，具体每一部分介绍以及code部分移步本目录文件`Transformer`。
 
-#### 4.2.2  Scaled Dot-Product Attention
 
 ## 5. Contextual Word Embedding
 
@@ -393,3 +386,6 @@ Self Attention也经常被称为intra Attention（内部Attention）,在一般�
 
 - [NLP基本任务](https://blog.csdn.net/lz_peter/article/details/81588430)
 - [张俊林-知乎分享](https://www.zhihu.com/question/68482809/answer/264632289)
+
+- [Attention Is All You Need](https://mp.weixin.qq.com/s/RLxWevVWHXgX-UcoxDS70w)
+
