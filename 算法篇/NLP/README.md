@@ -145,7 +145,7 @@
 
 - 词向量的表示模型（word embedding）
 
-  word2vec，glove，wordRank，fasttext（也可以分类）
+  [word2vec(2013)](https://blog.csdn.net/itplus/article/details/37969519)，[glove(2014)](http://www.fanyeong.com/2018/02/19/glove-in-detail/)，fasttext(2016)
 
   > [该文章](https://blog.csdn.net/sinat_26917383/article/details/54850933)对glove，fasttext和wordrank做了讲述和对比，比较详细。
   
@@ -153,23 +153,27 @@
 
   - LSTM/GRU
   - Seq2Seq
-  - Attention
-  - Self Attention
+  - Attention(2014)
+  - Transfomer(2017.6, self-attention)
+  - Transfoer-XL(2019.1)
 
   对于文本类型的数据，常用的方法就是使用RNN模型，它主要针对的任务类型为N vs N，N vs 1，1 vs N，其中N vs N表示N个输入和N个输出，其余类似。当输入输出不定长时，任务类型为N vs M时，原生的RNN模型有一定的局限，延伸的一个变种叫作Encoder-Decoder模型，也称之为Seq2Seq模型，像机器翻译，原始的输入和输出一般情况下是不等长的，之后在此基础上引入了attention机制，再之后引入了self-attention机制。
 
   > 该[文章](https://zhuanlan.zhihu.com/p/28054589)大致罗列了RNN模型和seq2seq以及Attention机制
 
+  *Attention机制最早是在视觉图像领域提出来的，应该是在九几年思想就提出来了，但是真正火起来应该算是2014年google mind团队的这篇论文《Recurrent Models of Visual Attention》，他们在RNN模型上使用了attention机制来进行图像分类。随后，Bahdanau等人在论文《Neural Machine Translation by Jointly Learning to Align and Translate》中，使用类似attention的机制在机器翻译任务上将翻译和对齐同时进行，他们的工作算是第一个将attention机制应用到NLP领域中。接着attention机制被广泛应用在基于RNN/CNN等神经网络模型的各种NLP任务中。2017年，google机器翻译团队发表的《Attention is all you need》中大量使用了自注意力（self-attention）机制来学习文本表示。自注意力机制也成为了大家近期的研究热点，并在各种NLP任务上进行探索。下图维attention研究进展的大概趋势。*
+
 - Contextual Word Embedding
 
   产生背景：标注数据量不足，难以学到复杂的上下文表示，想利用非标注数据进行学习。
 
-  - ELMo
-  - OpenAI GPT
-  - BERT
-  - XLNet
-
-  > 多用途模型是NLP领域的热门话题。这些模型为我们所关注的NLP应用提供了动力——机器翻译、问答系统、聊天机器人、情感分析等。这些多用途NLP模型的核心是语言建模的概念。简单来说，**语言模型的目的是预测序列中的下一个单词或字符**。五个目前比较 ULMFiT，Transformer，BERT，Tranformer-XL，GPT-2，XLNet
+  [这篇文章](https://zhuanlan.zhihu.com/p/56382372)对nlp中的词向量对比：word2vec/glove/fastText/elmo/GPT/bert做了阐述。
+  
+  - [ELMo(2018.3, bi-lstm)](https://zhuanlan.zhihu.com/p/51679783) 之后紧跟着出现了ULMFit和GPT
+  - OpenAI GPT(2018.6, transformer)
+- BERT(2018.10, transformer)
+  - XLNet(2019.6.19, transfomer-xl)
+  
 
 接下来对上面核心几部分一一进行学习。
 

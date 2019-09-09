@@ -180,14 +180,16 @@ $$
 
 ## 4. 总结
 
+[transformer-XL](https://mp.weixin.qq.com/s/2J6sFWavTaq9EisMr6xaMQ)
+
 - 改进
   - 提出用注意力机制来直接学习源语言内部关系和目标语言内部关系，而不是像之前用 RNN 来学；
   - 对存在多种不同关系的假设，而提出多头 (Multi-head) 注意力机制，有点类似于 CNN 中多通道的概念；
   - 对词语的位置，用了不同频率的 sin 和 cos 函数进行编码；
 
 - 缺点
-  - 实践上：有些rnn轻易可以解决的问题transformer没做到，比如复制string，尤其是碰到比训练时的sequence更长的时
-  - 理论上：transformers非computationally universal（图灵完备），（我认为）因为无法实现“while”循环
+  - Transformer网络具有学习较长期依赖关系的潜力，但是在语言建模的设置中受到**固定长度上下文(fixed-length context)**的限制。
+  - 
     
 
 ## References
