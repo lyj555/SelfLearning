@@ -129,6 +129,8 @@ $$
 \end{aligned}
 $$
 
+这表明位置 $k+p$的位置向量可以表示为位置$k$和$p$的特征向量的线性变化，这为模型捕捉单词之间的相对位置关系提供了非常大的便利。
+
 > 在其他NLP论文中，大家也都看过position embedding，通常是一个训练的向量，但是position embedding只是extra features，有该信息会更好，但是没有性能也不会产生极大下降，因为RNN、CNN本身就能够捕捉到位置信息，但是在Transformer模型中，Position Embedding是位置信息的唯一来源，因此是该模型的核心成分，并非是辅助性质的特征。
 
 ### 2.4 Position-wise Feed-forward Networks
@@ -180,20 +182,34 @@ $$
 
 ## 4. 总结
 
-[transformer-XL](https://mp.weixin.qq.com/s/2J6sFWavTaq9EisMr6xaMQ)
 
-- 改进
-  - 提出用注意力机制来直接学习源语言内部关系和目标语言内部关系，而不是像之前用 RNN 来学；
-  - 对存在多种不同关系的假设，而提出多头 (Multi-head) 注意力机制，有点类似于 CNN 中多通道的概念；
-  - 对词语的位置，用了不同频率的 sin 和 cos 函数进行编码；
 
+- 优点
+  
+  - **算法设计**
+  
+  这主要体现在其放弃了RNN和CNN这种传统网络，提出用注意力机制来直接学习源语言内部关系和目标，除了算法效果优于之前网络，其可以并行计算，大大加快了计算速度。
+  
+  - **直接的长距离依赖**
+  
+    原来的RNN中，第一个词要和第十个词发生关系，必须通过第二~九个词传递，进而产生两者的计算。而在这个过程中，第一帧的信息有可能已经产生了偏差，准确性和速度都难以保证。在Transformer中，由于self-attention的存在，任意两个词都有直接的交互，建立直接依赖。
+  
 - 缺点
   - Transformer网络具有学习较长期依赖关系的潜力，但是在语言建模的设置中受到**固定长度上下文(fixed-length context)**的限制。
-  - 
-    
+  - Transformer失去的位置信息其实在NLP中非常重要，而论文中在特征向量中加入Position Embedding也只是一个权宜之计，并没有改变Transformer结构上的固有缺陷。
+  - 虽然抛弃RNN和CNN虽然非常炫技，但是它也使模型丧失了捕捉局部特征的能力，RNN + CNN + Transformer的结合可能会带来更好的效果。
+
+## 5. Transformer应用
+
+
 
 ## References
 
 - [Transfomer](https://luozhouyang.github.io/transformer/)
-
 - [Attention Is All You Need](https://mp.weixin.qq.com/s/RLxWevVWHXgX-UcoxDS70w)
+- [seq2seq和Transformer](https://www.cnblogs.com/mengnan/p/9871665.html)
+
+- [详解Transformer （Attention Is All You Need）](https://zhuanlan.zhihu.com/p/48508221)
+
+- [transformer-XL](https://mp.weixin.qq.com/s/2J6sFWavTaq9EisMr6xaMQ)
+- [Transformer结构及其应用详解--GPT、BERT、MT-DNN、GPT-2](https://zhuanlan.zhihu.com/p/69290203)
