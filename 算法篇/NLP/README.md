@@ -145,7 +145,7 @@
 
 - 词向量的表示模型（word embedding）
 
-  word2vec，glove，wordRank，fasttext（也可以分类）
+  [word2vec(2013)](https://blog.csdn.net/itplus/article/details/37969519)，[glove(2014)](http://www.fanyeong.com/2018/02/19/glove-in-detail/)，fasttext(2016)
 
   > [该文章](https://blog.csdn.net/sinat_26917383/article/details/54850933)对glove，fasttext和wordrank做了讲述和对比，比较详细。
   
@@ -153,23 +153,27 @@
 
   - LSTM/GRU
   - Seq2Seq
-  - Attention
-  - Self Attention
+  - Attention(2014)
+  - Transfomer(2017.6, self-attention)
+  - Transfoer-XL(2019.1)
 
   对于文本类型的数据，常用的方法就是使用RNN模型，它主要针对的任务类型为N vs N，N vs 1，1 vs N，其中N vs N表示N个输入和N个输出，其余类似。当输入输出不定长时，任务类型为N vs M时，原生的RNN模型有一定的局限，延伸的一个变种叫作Encoder-Decoder模型，也称之为Seq2Seq模型，像机器翻译，原始的输入和输出一般情况下是不等长的，之后在此基础上引入了attention机制，再之后引入了self-attention机制。
 
   > 该[文章](https://zhuanlan.zhihu.com/p/28054589)大致罗列了RNN模型和seq2seq以及Attention机制
 
+  *Attention机制最早是在视觉图像领域提出来的，应该是在九几年思想就提出来了，但是真正火起来应该算是2014年google mind团队的这篇论文《Recurrent Models of Visual Attention》，他们在RNN模型上使用了attention机制来进行图像分类。随后，Bahdanau等人在论文《Neural Machine Translation by Jointly Learning to Align and Translate》中，使用类似attention的机制在机器翻译任务上将翻译和对齐同时进行，他们的工作算是第一个将attention机制应用到NLP领域中。接着attention机制被广泛应用在基于RNN/CNN等神经网络模型的各种NLP任务中。2017年，google机器翻译团队发表的《Attention is all you need》中大量使用了自注意力（self-attention）机制来学习文本表示。自注意力机制也成为了大家近期的研究热点，并在各种NLP任务上进行探索。下图维attention研究进展的大概趋势。*
+
 - Contextual Word Embedding
 
   产生背景：标注数据量不足，难以学到复杂的上下文表示，想利用非标注数据进行学习。
 
-  - ELMo
-  - OpenAI GPT
-  - BERT
-  - XLNet
-
-  > 多用途模型是NLP领域的热门话题。这些模型为我们所关注的NLP应用提供了动力——机器翻译、问答系统、聊天机器人、情感分析等。这些多用途NLP模型的核心是语言建模的概念。简单来说，**语言模型的目的是预测序列中的下一个单词或字符**。五个目前比较 ULMFiT，Transformer，BERT，Tranformer-XL，GPT-2，XLNet
+  [这篇文章](https://zhuanlan.zhihu.com/p/56382372)对nlp中的词向量对比：word2vec/glove/fastText/elmo/GPT/bert做了阐述。
+  
+  - [ELMo(2018.3, bi-lstm)](https://zhuanlan.zhihu.com/p/51679783) 之后紧跟着出现了ULMFit和GPT
+  - OpenAI GPT(2018.6, transformer)
+- BERT(2018.10, transformer)
+  - XLNet(2019.6.19, transfomer-xl)
+  
 
 接下来对上面核心几部分一一进行学习。
 
@@ -235,8 +239,6 @@ $$
 其中$C$为Encoder阶段生成的中间语意表示，函数$G$为Decoder中使用的非线性变换函数。
 
 从上面$<y_1,y_2,y_3>$生成过程可以看出，无论生成哪个词汇，它们对输入句子的使用都是中间的语义编码，没有任何区别，语义编码$C$是由句子Source的每个单词经过Encoder 编码产生的，这意味着不论是生成哪个单词，$y_1$,$y_2$还是$y_3$，**其实句子Source中任意单词对生成某个目标单词$y_i$来说影响力都是相同的**，这是为何说这个模型没有体现出注意力的缘由。这类似于人类看到眼前的画面，但是眼中却没有注意焦点一样。
-
-
 
 以机器翻译任务（input：Tom chase Jerry, output: 汤姆追逐杰瑞）为例，
 
@@ -326,10 +328,117 @@ $$
   Attention(Query, Source)=\sum_{i=1}^{L_x}a_i \cdot \rm{Value}_i
   $$
 
-### 4.2 Self-Attention
+> 未加入attention机制的encoder-docoder，如果中间语义编码C可以任意长，也可以达到attention的效果，但是其长度往往有限，attention机制可以看作是一种折中的方式。
 
-Self Attention也经常被称为intra Attention（内部Attention）,在一般任务的Encoder-Decoder框架中，输入Source和输出Target内容是不一样的，比如对于英-中机器翻译来说，Source是英文句子，Target是对应的翻译出的中文句子，Attention机制发生在Target的元素Query和Source中的所有元素之间。而Self Attention顾名思义，**指的不是Target和Source之间的Attention机制，而是Source内部元素之间或者Target内部元素之间发生的Attention机制**，也可以理解为Target=Source这种特殊情况下的注意力计算机制。其具体计算过程和上面的方式完全一致，只是计算对象发生了变化而已，
+#### 4.1.4 Q&A
 
+- 为什么要引入Attention机制？
+
+  根据通用近似定理，前馈网络和循环网络都有很强的能力。但为什么还要引入注意力机制呢？
+
+  - 计算机能力的限制
+
+    当要记住很多“信息“，模型就要变得更复杂，然而目前计算能力依然是限制神经网络发展的瓶颈。类似encoder-decoder框架中，未使用attention机制前中间语义编码C显然受制于长度的限制，表达能力有限
+
+  - 优化算法的限制
+
+    虽然局部连接、权重共享以及pooling等优化操作可以让神经网络变得简单一些，有效缓解模型复杂度和表达能力之间的矛盾；但是，如循环神经网络中的长距离以来问题，信息“记忆”能力并不高。
+
+  **可以借助人脑处理信息过载的方式，例如Attention机制可以提高神经网络处理信息的能力。**
+
+- Attention机制有哪些？（怎么分类？）
+
+  当用神经网络来处理大量的输入信息时，也可以借鉴人脑的注意力机制，只 选择一些关键的信息输入进行处理，来提高神经网络的效率。按照认知神经学中的注意力，可以总体上分为两类：
+
+  - **聚焦式（focus）注意力**
+
+    自上而下的有意识的注意力，**主动注意**——是指有预定目的、依赖任务的、主动有意识地聚焦于某一对象的注意力
+
+  - **显著性（saliency-based）注意力**
+
+    自下而上的有意识的注意力，**被动注意**——基于显著性的注意力是由外界刺激驱动的注意，不需要主动干预，也和任务无关；可以将max-pooling和门控（gating）机制来近似地看作是自下而上的基于显著性的注意力机制。
+
+  在人工神经网络中，注意力机制一般就特指聚焦式注意力。
+
+- Attention机制的变种有哪些？
+
+  - 硬性注意力
+
+    之前提到的注意力是软性注意力，其选择的信息是所有输入信息在注意力分布下的期望。还有一种注意力是只关注到某一个位置上的信息，叫做硬性注意力（hard attention）。硬性注意力有两种实现方式：（1）一种是选取最高概率的输入信息；
+
+    （2）另一种硬性注意力可以通过在注意力分布式上随机采样的方式实现。
+
+    硬性注意力模型的缺点：
+
+    *硬性注意力的一个缺点是基于最大采样或随机采样的方式来选择信息。因此最终的损失函数与注意力分布之间的函数关系不可导，因此无法使用在反向传播算法进行训练。为了使用反向传播算法，一般使用软性注意力来代替硬性注意力。硬性注意力需要通过强化学习来进行训练。*
+
+  - 键值对注意力
+
+    Key!=Value，计算方式同上
+
+  - 多头注意力
+
+    多头注意力（multi-head attention）是利用多个查询Q = [q1, · · · , qM]，来平行地计算从输入信息中选取多个信息。每个注意力关注输入信息的不同部分，然后再进行拼接：
+
+### 4.2 Transformer
+
+自从Attention机制在提出之后，加入Attention的Seq2Seq模型在各个任务上都有了提升，所以现在的seq2seq模型指的都是结合rnn和attention的模型。传统的基于RNN的Seq2Seq模型难以处理长序列的句子，无法实现并行，并且面临对齐的问题。
+
+所以之后这类模型的发展大多数从三个方面入手：
+
+- input的方向性：单向 -> 双向
+
+- 深度：单层 -> 多层
+
+- 类型：RNN -> LSTM GRU
+
+但是依旧受到一些潜在问题的制约，神经网络需要能够将源语句的所有必要信息压缩成固定长度的向量。这可能使得神经网络难以应付长时间的句子，特别是那些比训练语料库中的句子更长的句子；每个时间步的输出需要依赖于前面时间步的输出，这使得模型没有办法并行，效率低；仍然面临对齐问题。
+
+再然后CNN由计算机视觉也被引入到deep NLP中，CNN不能直接用于处理变长的序列样本但可以实现并行计算。完全基于CNN的Seq2Seq模型虽然可以并行实现，但非常占内存，很多的trick，大数据量上参数调整并不容易。
+
+本篇文章创新点在于**抛弃了之前传统的encoder-decoder模型必须结合cnn或者rnn的固有模式，只用Attention**。文章的主要目的在于减少计算量和提高并行效率的同时不损害最终的实验结果。
+
+#### 4.2.1 模型结构
+
+模型框架图如下，
+
+![](../../pics/transformer.webp)
+
+看上去构造还是比较复杂的，先从大面进行理解，然后一步步细化。Transformer的本质仍然是Seq2Seq的思想，采用了Encoder-Decoder框架，如下所示，
+
+![](../../pics/seq2seq.webp)
+
+论文中提到了Transformer采用了多个Encoder和多个Decoder进行结合，进一步将上图展开后有，
+
+![](../../pics/transformer_encoder_decoder.webp)
+
+也就是说，Encoder的输出，会和每一层的Decoder进行结合。取其中一层（也即上面第一张模型架构图）进行详细的展示（简化版）如下，
+
+![](../../pics/transformer_simply.webp)
+
+上面提及的结果相当于模型中使用的一个Encoder和一个Decoder，相当于是最上面提到transformer模型架构图的简化形式。在Encoder中，对于输入做Self-Attention，然后前馈输出；在Decoder中，同样对输出进行Self-Attention操作，然后对Encoder中的输出和Self-Attention的结果做一个Attention，最终在前向传播。
+
+该部分对整体框架做了大致介绍，具体每一部分介绍以及code部分移步本目录文件`Transformer`。
+
+#### 4.2.2 Q&A
+
+- 为什么自注意力模型（self-Attention model）在长距离序列中如此强大，卷积或循环神经网络难道不能处理长距离序列吗？
+
+  当使用神经网络来处理一个变长的向量序列时，我们通常可以使用卷积网络或循环网络进行编码来得到一个相同长度的输出向量序列，如图所示：
+
+  ![](../../pics/qa_cnn_rnn.jpg)
+
+  从上图可以看出，无论卷积还是循环神经网络其实都是对变长序列的一种“局部编码”：卷积神经网络显然是基于N-gram的局部编码；而对于循环神经网络，由于梯度消失等问题也只能建立短距离依赖。
+
+- 要解决这种短距离依赖的“局部编码”问题，从而对输入序列建立长距离依赖关系，有哪些办法呢？
+
+  如果要建立输入序列之间的长距离依赖关系，可以使用以下两种方法：一种方法是增加网络的层数，通过一个深层网络来获取远距离的信息交互，另一种方法是使用全连接网络。
+
+  全连接网络虽然是一种非常直接的建模远距离依赖的模型， 但是无法处理变长的输入序列。不同的输入长度，其连接权重的大小也是不同的。
+
+  这时我们就可以**利用注意力机制来“动态”地生成不同连接的权重**，这就是自注意力模型（self-attention model）。由于自注意力模型的权重是动态生成的，因此可以处理变长的信息序列。
+
+  总体来说，为什么自注意力模型（self-Attention model）如此强大：利用注意力机制来“动态”地生成不同连接的权重，从而处理变长的信息序列。
 
 
 ## 5. Contextual Word Embedding
@@ -351,3 +460,6 @@ Self Attention也经常被称为intra Attention（内部Attention）,在一般�
 
 - [NLP基本任务](https://blog.csdn.net/lz_peter/article/details/81588430)
 - [张俊林-知乎分享](https://www.zhihu.com/question/68482809/answer/264632289)
+
+- [Attention Is All You Need](https://mp.weixin.qq.com/s/RLxWevVWHXgX-UcoxDS70w)
+
