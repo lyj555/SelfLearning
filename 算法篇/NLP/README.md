@@ -181,7 +181,7 @@
 
 
 
-## 4. RNN的改进和拓展
+## 4. Seq2seq的改进和拓展
 
 有关RNN的基础模型，类似LSTM和GRU已在**深度学习篇章**进行了总结，这里不再赘述。主要从Attention和Self-Attention机制入手。
 
