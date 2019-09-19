@@ -181,7 +181,7 @@
 
 
 
-## 4. Seq2seq的改进和拓展
+## 4. Seq2seq的改进
 
 有关RNN的基础模型，类似LSTM和GRU已在**深度学习篇章**进行了总结，这里不再赘述。主要从Attention和Self-Attention机制入手。
 
@@ -330,7 +330,7 @@ $$
 
 > 未加入attention机制的encoder-docoder，如果中间语义编码C可以任意长，也可以达到attention的效果，但是其长度往往有限，attention机制可以看作是一种折中的方式。
 
-#### 4.1.4 Q&A
+#### 4.1.4 Attention机制的Q&A
 
 - 为什么要引入Attention机制？
 
@@ -453,7 +453,9 @@ $$
 
 
 
-## 7. NLP数据预处理
+## 7. NLP Q&A
+
+
 
 
 ## References
