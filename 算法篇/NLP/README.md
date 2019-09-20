@@ -171,7 +171,7 @@
   
   - [ELMo(2018.3, bi-lstm)](https://zhuanlan.zhihu.com/p/51679783) 之后紧跟着出现了ULMFit和GPT
   - OpenAI GPT(2018.6, transformer)
-- BERT(2018.10, transformer)
+  - BERT(2018.10, transformer)
   - XLNet(2019.6.19, transfomer-xl)
   
 
@@ -455,7 +455,13 @@ $$
 
 ## 7. NLP Q&A
 
+### 7.1 nlp中的词向量对比
 
+- 文本表示的方法有哪些？
+  - 基于one-hot、tf-idf、textrank等的bag-of-words；
+  - 主题模型：LSA（SVD）、pLSA、LDA；
+  - 基于词向量的固定表征：word2vec、fastText、glove
+  - 基于词向量的动态表征：elmo、GPT、bert
 
 
 ## References
