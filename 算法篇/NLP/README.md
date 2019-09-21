@@ -179,6 +179,18 @@
 
 ## 3. 词向量（WordEmbedding）
 
+这部分主要复习word2vec、fasttext和glove
+
+### 3.1 word2vec
+
+
+
+### 3.2 fasttext
+
+
+
+### 3.3 glove
+
 
 
 ## 4. Seq2seq的改进
@@ -442,6 +454,18 @@ $$
 
 
 ## 5. Contextual Word Embedding
+
+目前比较流行的contextual word embedding方法有ELMo，GPT，GPT-2，BERT和XLNet。
+
+### 5.1 ELMo
+
+
+
+### 5.2 OpenAI GPT
+
+
+
+### 5.3 BERT
 
 
 
