@@ -487,7 +487,33 @@ $$
 
 #### 5.1.3 词向量
 
+对于每个token$t_k$，$L$层的双向语言模型可以得到$2L+1$个表达，
+$$
+\begin{align}
+R_k &= \{x_k, \overrightarrow{h}_{k,j}, \overleftarrow{h}_{k,j} |j=1,\ldots,L\} \\
+&= \{h_{k,j}|j=0,\ldots,L\}
+\end{align}
+$$
+其中$h_{k,0}$表示token层，$h_{k,j}=[\overrightarrow{h}_{k,j};\overleftarrow{h}_{k,j}]$
 
+在上面的词向量中，每个token$t_k$的词向量仍然包括$L+1$个，需要将这些向量变为只有一个才更容易加入下游的任务，在一些简单的例子中，仅仅去了顶层的词向量表示即$h_{k,L}$，通常来说，可以根据任务为每一层词向量得到一个权重，
+$$
+ELMo_k^{task} = E(R_k;\Theta^{task})=\gamma^{task}\sum_{j=1}^L s_j^{task}h_{k,j}
+$$
+其中$s_j^{task}$代表每一层词向量的权重，且$\sum_{j=1}^L s_j^{task}=1$，而$\gamma^{task}$则是对整体词向量的放缩因子
+
+最终使用词向量时可以做词向量的拼接作为最终词向量，如$[x_k; ELMo_k^{task}]$，$[h_k;ELMo_k^{task}]$（任务为SNLI，SQuAD，*个人理解$h_k$是通过其他模型RNNs,CNNs结合$x_k$得到一个中间表示*）
+
+#### 5.1.4 总结
+
+作者论文中$L=2$，词向量维度为512，作者通过实验表名在双向语言模型中，越高层表示对词义消歧做的越好（表明越高层越能捕获词意信息），而低层更能学习到词的句法信息和词性信息。总体而言，biLM每层学到的东西是不一样的，所以将他们叠加起来，对任务有较好的的提升。
+
+- 优点
+  - 词向量会根据语境发生变化，而不是一成不变（一词多义，同一单词在不同的语境中，词向量不同）
+  - 可以学习到词的复杂特征，包括词义词性等特征（底层和高层）
+- 缺点
+  - ELMO 采取双向拼接这种融合特征的能力，相比较于整体整合来说，这样会损失掉一些信息
+  - 在中间模型选择上，使用LSTM模型，在捕获长依赖上存在缺陷，换位Transformer这种结构可能会更好一些。
 
 ### 5.2 OpenAI GPT
 
@@ -522,4 +548,6 @@ $$
 - [张俊林-知乎分享](https://www.zhihu.com/question/68482809/answer/264632289)
 
 - [Attention Is All You Need](https://mp.weixin.qq.com/s/RLxWevVWHXgX-UcoxDS70w)
+
+- [ELMo原理解析及简单上手使用](https://zhuanlan.zhihu.com/p/51679783)
 
