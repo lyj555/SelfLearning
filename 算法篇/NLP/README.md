@@ -171,7 +171,7 @@
   
   - [ELMo(2018.3, bi-lstm)](https://zhuanlan.zhihu.com/p/51679783) 之后紧跟着出现了ULMFit和GPT
   - OpenAI GPT(2018.6, transformer)
-- BERT(2018.10, transformer)
+  - BERT(2018.10, transformer)
   - XLNet(2019.6.19, transfomer-xl)
   
 
@@ -179,9 +179,21 @@
 
 ## 3. 词向量（WordEmbedding）
 
+这部分主要复习word2vec、fasttext和glove
+
+### 3.1 word2vec
 
 
-## 4. RNN的改进和拓展
+
+### 3.2 fasttext
+
+
+
+### 3.3 glove
+
+
+
+## 4. Seq2seq的改进
 
 有关RNN的基础模型，类似LSTM和GRU已在**深度学习篇章**进行了总结，这里不再赘述。主要从Attention和Self-Attention机制入手。
 
@@ -330,7 +342,7 @@ $$
 
 > 未加入attention机制的encoder-docoder，如果中间语义编码C可以任意长，也可以达到attention的效果，但是其长度往往有限，attention机制可以看作是一种折中的方式。
 
-#### 4.1.4 Q&A
+#### 4.1.4 Attention机制的Q&A
 
 - 为什么要引入Attention机制？
 
@@ -443,6 +455,72 @@ $$
 
 ## 5. Contextual Word Embedding
 
+目前比较流行的contextual word embedding方法有ELMo，GPT，GPT-2，BERT和XLNet。
+
+### 5.1 ELMo
+
+2018年3月份，ELMo(Embeddings from Language Models)出世，该paper是NAACL18 Best Paper。在之前2013年的word2vec及2014年的GloVe的工作中，每个词对应一个vector，对于多义词无能为力。ELMo的工作对于此，提出了一个较好的解决方案。不同于以往的一个词对应一个向量，是固定的。在ELMo世界里，预训练好的模型不再只是向量对应关系，而是一个训练好的模型。使用时，将一句话或一段话输入模型，模型会根据上线文来推断每个词对应的词向量。这样做之后明显的好处之一就是对于多义词，可以结合前后语境对多义词进行理解。比如appele，可以根据前后文语境理解为公司或水果。
+
+#### 5.1.2 模型原理
+
+ELMo是一个双向的语言模型，给定一段话，这段话包含$N$个token，$(t_1, t_2, \ldots, t_N)$。前向语言模型通过给定历史$k-1$个token$(t_1, t_2, \ldots, t_{k-1})$来预测第$k$个token出现的概率，则整个序列可以表示为，
+$$
+p(t_1, t_2, \ldots, t_N) = \sum_{k=1}^{N} p(t_k|t_1, t_2, \ldots, t_{k-1})
+$$
+后向语言概率则相反，给定未来序列信息来预测该token的概率，
+$$
+p(t_1,t_2, \ldots, t_N) = \sum_{k=1}^N p(t_K| t_{k+1}, t_{k+1}, \ldots, t_N)
+$$
+在确定上述的框架以及预测目标后，接下来需要选取预测目标的模型，ELMo中选用了$L$层的LSTM来作为目标预测模型。以前向语言模型为例，显然在序列$k$位置，每个LSTM层最后会输出一个隐向量$h_{kj}$，其中$j=1,\ldots,L$，隐向量$h_{kL}$通过Softmax层来预测下一个token$t_{k+1}$出现的概率。
+
+则一个基于LSTM的双向语言模型的目标（加入log变换）可以表示为如下，
+$$
+\sum_{k=1}^N \log p(t_k|t_1,\ldots,t_{k-1};\Theta_x,\overrightarrow{\Theta}_{LSTM},\Theta_s)+\log p(t_k|t_{k+1},\ldots,t_{N};\Theta_x,\overleftarrow{\Theta}_{LSTM},\Theta_s)
+$$
+其中$\Theta_x$为token representation，$\Theta_s$为softmax层，前向和后向语言模型共享$\Theta_x$和$\Theta_s$参数。
+
+那么ELMo模型的框架如下图所示，
+
+![](../../pics/elmo.jpg)
+
+接下来则是根据上图模型结构生成对应的词向量。
+
+#### 5.1.3 词向量
+
+对于每个token$t_k$，$L$层的双向语言模型可以得到$2L+1$个表达，
+$$
+\begin{align}
+R_k &= \{x_k, \overrightarrow{h}_{k,j}, \overleftarrow{h}_{k,j} |j=1,\ldots,L\} \\
+&= \{h_{k,j}|j=0,\ldots,L\}
+\end{align}
+$$
+其中$h_{k,0}$表示token层，$h_{k,j}=[\overrightarrow{h}_{k,j};\overleftarrow{h}_{k,j}]$
+
+在上面的词向量中，每个token$t_k$的词向量仍然包括$L+1$个，需要将这些向量变为只有一个才更容易加入下游的任务，在一些简单的例子中，仅仅去了顶层的词向量表示即$h_{k,L}$，通常来说，可以根据任务为每一层词向量得到一个权重，
+$$
+ELMo_k^{task} = E(R_k;\Theta^{task})=\gamma^{task}\sum_{j=1}^L s_j^{task}h_{k,j}
+$$
+其中$s_j^{task}$代表每一层词向量的权重，且$\sum_{j=1}^L s_j^{task}=1$，而$\gamma^{task}$则是对整体词向量的放缩因子
+
+最终使用词向量时可以做词向量的拼接作为最终词向量，如$[x_k; ELMo_k^{task}]$，$[h_k;ELMo_k^{task}]$（任务为SNLI，SQuAD，*个人理解$h_k$是通过其他模型RNNs,CNNs结合$x_k$得到一个中间表示*）
+
+#### 5.1.4 总结
+
+作者论文中$L=2$，词向量维度为512，作者通过实验表名在双向语言模型中，越高层表示对词义消歧做的越好（表明越高层越能捕获词意信息），而低层更能学习到词的句法信息和词性信息。总体而言，biLM每层学到的东西是不一样的，所以将他们叠加起来，对任务有较好的的提升。
+
+- 优点
+  - 词向量会根据语境发生变化，而不是一成不变（一词多义，同一单词在不同的语境中，词向量不同）
+  - 可以学习到词的复杂特征，包括词义词性等特征（底层和高层）
+- 缺点
+  - ELMO 采取双向拼接这种融合特征的能力，相比较于整体整合来说，这样会损失掉一些信息
+  - 在中间模型选择上，使用LSTM模型，在捕获长依赖上存在缺陷，换位Transformer这种结构可能会更好一些。
+
+### 5.2 OpenAI GPT
+
+
+
+### 5.3 BERT
+
 
 
 ## 6. NLP任务模型
@@ -453,7 +531,15 @@ $$
 
 
 
-## 7. NLP数据预处理
+## 7. NLP Q&A
+
+### 7.1 nlp中的词向量对比
+
+- 文本表示的方法有哪些？
+  - 基于one-hot、tf-idf、textrank等的bag-of-words；
+  - 主题模型：LSA（SVD）、pLSA、LDA；
+  - 基于词向量的固定表征：word2vec、fastText、glove
+  - 基于词向量的动态表征：elmo、GPT、bert
 
 
 ## References
@@ -462,4 +548,6 @@ $$
 - [张俊林-知乎分享](https://www.zhihu.com/question/68482809/answer/264632289)
 
 - [Attention Is All You Need](https://mp.weixin.qq.com/s/RLxWevVWHXgX-UcoxDS70w)
+
+- [ELMo原理解析及简单上手使用](https://zhuanlan.zhihu.com/p/51679783)
 

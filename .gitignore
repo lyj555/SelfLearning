@@ -2,5 +2,8 @@
 *.log
 *.pyc
 __pycache__
-
+# 工具篇/torch_learning/ModelExample/image_classification/CIFAR10/data
+# 工具篇/torch_learning/ModelExample/image_classification/DigitRecognizer/data
+data
+.idea
 
