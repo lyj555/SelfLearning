@@ -167,11 +167,14 @@
 
   产生背景：标注数据量不足，难以学到复杂的上下文表示，想利用非标注数据进行学习。
 
-  [这篇文章](https://zhuanlan.zhihu.com/p/56382372)对nlp中的词向量对比：word2vec/glove/fastText/elmo/GPT/bert做了阐述。
+  [这篇文章](https://zhuanlan.zhihu.com/p/56382372)以Q&A的方式对nlp中的词向量对比：word2vec/glove/fastText/elmo/GPT/bert做了阐述。
+  
+  张俊林老师的[从Word Embedding到Bert模型—自然语言处理中的预训练技术发展史](https://zhuanlan.zhihu.com/p/49271699)，说的非常好，还有[放弃幻想，全面拥抱Transformer：自然语言处理三大特征抽取器（CNN/RNN/TF）比较](https://zhuanlan.zhihu.com/p/54743941)
   
   - [ELMo(2018.3, bi-lstm)](https://zhuanlan.zhihu.com/p/51679783) 之后紧跟着出现了ULMFit和GPT
   - OpenAI GPT(2018.6, transformer)
   - BERT(2018.10, transformer)
+  - [GPT-2(2019.2)](https://zhuanlan.zhihu.com/p/56865533)
   - XLNet(2019.6.19, transfomer-xl)
   
 
@@ -520,6 +523,14 @@ $$
 
 
 ### 5.3 BERT
+
+
+
+### 5.4 GPT-2
+
+
+
+### 5.5 XLNet
 
 
 
