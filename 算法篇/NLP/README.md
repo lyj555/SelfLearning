@@ -526,7 +526,53 @@ $$
 
 ### 5.2 OpenAI GPT
 
+GPT提出一种半监督的方式来处理语言理解的任务。使用非监督的预训练和监督方式的微调。我们的目标是学习一个通用的语言标示，可以经过很小的调整就应用在各种任务中。这个模型的设置不需要目标任务和非标注的数据集在同一个领域。模型有两个过程,
 
+1. 通过语言模型在无标签的数据上学习一个深度模型
+2. 随后通过相应的监督目标在有标记的数据上微调这个深度模型
+
+#### 5.2.1 模型原理
+
+- 无监督预训练（Unsupervised pre-training）
+
+  假设我们的语料库的token为$U=\{u_1,u_2,\ldots,u_n\}$，然后通过语言模型的目标函数来极大化极大似然，
+  $$
+  L_1(U)=\sum_i \log p(u_i|u_{i-k},\ldots,u_{i-1}, \Theta)
+  $$
+  其中$k$是滑动窗口，$\Theta$为模型的参数
+
+  训练的模型为多层的Transformer decoder，简述如下，
+  $$
+  \begin{align}
+  h_0 &= UW_e + W_p \\
+  h_l &= \rm{transformer\_block}(h_{l-1})\ \forall i \in [1,n] \\
+  P(u) &= \rm{softmax}(h_nW_e^T)
+  \end{align}
+  $$
+  其中$U=(u_{-k},\ldots,u_{-1})$是语料context vector，$W_e$为token的embedding矩阵，$W_p$为position embedding矩阵，$n$为transformer的层数。
+
+- 有监督微调（Supervised fine-tuning）
+
+  假设有标记的训练数据为$C$，其中一个样本其输入的token为$\{x^1, \ldots, x^m\}$，标签为$y$。
+
+  在得到上面的预训练模型后，只需要将上面训练数据集输入的token输入至预训练模型中，得到最优一个transformer block的输出$h_l^m$，然后后面接一个全连接层和softmax即可，
+  $$
+  P(y|x^1, \ldots, x^m)=\rm{softmax}(h_l^mW_y)
+  $$
+  则有标记数据集上优化的目标函数为
+  $$
+  L_2(C) = \sum_{(x,y)} \log P(y|x^1, \ldots, x^m)
+  $$
+  之后发现将语言模型的目标函数加入起到了不错的效果，此时的目标函数为
+  $$
+  L_3(C) = L_2(C) + \lambda L_1(C)
+  $$
+
+  > 整体看来，预训练阶段需要更新的参数为$W_y$和一些特殊标记的词向量（多输入文本的分割标记）
+
+  Open AI GPT模型的框架图如下，
+
+  ![](../../pics/openai_gpt.png)
 
 ### 5.3 BERT
 
