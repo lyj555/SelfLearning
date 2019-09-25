@@ -595,6 +595,16 @@ GPT整体对未标记数据来预训练，然后通过有标记数据来微调�
 
 ### 5.3 BERT
 
+BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation。
+
+#### 5.3.1 模型原理
+
+
+
+**Task 1: Masked LM**
+
+为了训练一个比较深的双向表示，将输入进行了随机的mask，然后mask的内容作学习的目标。最终从输入中随机选择15%mask，将这些token作为预测目标。
+
 
 
 ### 5.4 GPT-2
