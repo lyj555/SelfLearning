@@ -631,11 +631,47 @@ BERT是一个多任务模型，它的任务是由两个自监督任务组成，�
 
 > 原因：如果句子中某个token100%mask掉，在fine-tuning的时候模型就会有一些没有见过的单词；加入随机token的原因就是想保持对每个输入token的分布式表征，否则模型就会记住这个[mask]为token 'hairy'，当然也会带来一些负面影响，不过一个单词随机替换的概率为15%*10%=1.5%，比例很小，可以忽略。
 
+> 论文提到因为只选取15%的token进行预测，所以模型整体的收敛速度很慢，但是最终的效果很好。
+
 **Task 2: Next Sentence Prediction**
 
-Next Sentence Prediction（NSP）的任务是判断句子B是否是句子A的下文。如果是的话输出`IsNext`，否则输出`NotNext`。训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话是随机从预料中提取的，它们的关系是NotNext的。这个关系保存在图4中的`[CLS]`符号中。
+Next Sentence Prediction（NSP）的任务是判断句子B是否是句子A的下文。如果是的话输出`IsNext`，否则输出`NotNext`。训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话是随机从预料中提取的，它们的关系是NotNext的。这个关系保存在图4中的`[CLS]`符号中。形如下，
+
+```
+Input = [CLS] the man went to [MASK] store [SEP]
+he bought a gallon [MASK] milk [SEP]
+Label = IsNext
+
+Input = [CLS] the man [MASK] to the store [SEP]
+penguin [MASK] are flight ##less birds [SEP]
+Label = NotNext
+```
 
 ##### 5.3.1.2 微调任务
+
+对于不同的任务，只需在BERT的基础上调整一下输入和输出即可，分类任务下，只需要取标记[CLS]最终的embedding$C, C \in R^H$，加一层权重$W, W \in R^{K*H}$，然后softmax即可得到预测概率，
+$$
+P=softmax(CW^T)
+$$
+对于其他学习任务需要做不同的调整，如下，
+
+![](../../pics/bert_finetune.png)
+
+#### 5.3.2 词向量
+
+主要是两种表征方式，一个是微调预训练模型，另外一个是直接通过预训练模型产生词向量（feature-based）。
+
+- 微调预训练模型
+
+  这个就是上面所说的方式，基于预训练的模型，根据目标任务建立目标函数，微调BERT模型。
+
+- 直接产生词向量（featuer-based）
+
+  相当于不需要微调模型，直接基于预训练的模型产生词向量，然后根据目标任务后面接其它的层。
+
+  > 论文提到这种方式可以实现不错的效果，一些任务上要比微调的方式差些
+
+#### 5.3.3 总结
 
 
 
