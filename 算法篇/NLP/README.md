@@ -595,15 +595,47 @@ GPT整体对未标记数据来预训练，然后通过有标记数据来微调�
 
 ### 5.3 BERT
 
-BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation。
+BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation，在整体网络模式上和Open AI GPT类似，分为预训练和微调两个阶段。
+
+BERT的整体网络结构由多层的Transformer Decoder组成，如下图所示，
+
+![](../../pics/bert.jpg)
 
 #### 5.3.1 模型原理
 
+**输入表示**
 
+BERT的输入的编码向量（长度是512）是3个嵌入特征的单位和，如图下图，这三个词嵌入特征是：
+
+1. word piece嵌入（WordPiece Embedding），word piece是指将单词划分为一组有限的公共字词单元能在单词的有效性和字符的灵活性之间取得一个折中的平衡。例如图4的示例中‘playing’被拆分成了‘play’和‘ing’；（在中文应该是字粒度，没有这一说了）
+2. 未知嵌入（Position Embedding），位置嵌入是指将单词的位置信息编码成特征向量，位置嵌入是向模型中引入单词位置关系的至关重要的一环。
+3. 分割嵌入（Segment Embedding），用于区分两个句子，例如B是否是A的下文（对话场景，问答场景等）。对于句子对，第一个句子的特征值是0，第二个句子的特征值是1。
+
+![](../../pics/bert_input_embedding.jpg)
+
+> 上图中，有两个特殊符号[CLS]和[SEP]，其中[CLS]用来表示该特征可以用于分类模型，对于非分类模型，该符号可以省略；[SEP]表示分句符号，用于断开输入语料中的两个句子。
+
+##### 5.3.1.1 预训练任务
+
+BERT是一个多任务模型，它的任务是由两个自监督任务组成，即MLM和NSP。
 
 **Task 1: Masked LM**
 
 为了训练一个比较深的双向表示，将输入进行了随机的mask，然后mask的内容作学习的目标。最终从输入中随机选择15%mask，将这些token作为预测目标。
+
+在BERT的实验中，15%的WordPiece Token会被随机Mask掉。在训练模型时，一个句子会被多次喂到模型中用于参数学习，但是BERT并没有在每次都mask掉这些单词，而是在确定要Mask掉的单词之后，80%的时候会直接替换为[Mask]，10%的时候将其替换为其它任意单词，10%的时候会保留原始Token。
+
+- 80%：`my dog is hairy -> my dog is [mask]`
+- 10%：`my dog is hairy -> my dog is apple`
+- 10%：`my dog is hairy -> my dog is hairy`
+
+> 原因：如果句子中某个token100%mask掉，在fine-tuning的时候模型就会有一些没有见过的单词；加入随机token的原因就是想保持对每个输入token的分布式表征，否则模型就会记住这个[mask]为token 'hairy'，当然也会带来一些负面影响，不过一个单词随机替换的概率为15%*10%=1.5%，比例很小，可以忽略。
+
+**Task 2: Next Sentence Prediction**
+
+Next Sentence Prediction（NSP）的任务是判断句子B是否是句子A的下文。如果是的话输出`IsNext`，否则输出`NotNext`。训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话是随机从预料中提取的，它们的关系是NotNext的。这个关系保存在图4中的`[CLS]`符号中。
+
+##### 5.3.1.2 微调任务
 
 
 
@@ -644,4 +676,8 @@ BERT的全称是Bidirectional Encoder Representation from Transformers，即双�
 - [ELMo原理解析及简单上手使用](https://zhuanlan.zhihu.com/p/51679783)
 
 - [自然语言处理中的语言模型预训练方法（ELMo、GPT和BERT）](https://www.cnblogs.com/robert-dlut/p/9824346.html)
+
+- [BERT详解](https://zhuanlan.zhihu.com/p/48612853)
+
+- [图解BERT模型：从零开始构建BERT](https://cloud.tencent.com/developer/article/1389555)
 
