@@ -141,6 +141,12 @@
 
 ## 2. NLP相关模型
 
+### 2.1 语言模型
+
+
+
+### 2.2 模型概述
+
 [这篇文章](https://mp.weixin.qq.com/s?__biz=MzA4MTk3ODI2OA==&mid=2650344227&idx=1&sn=a40c9f90fb58d8a28713d01214f41f00&chksm=87811dd0b0f694c615a4ecad32dceb9cabf425d25f231a1e3df5295807e8d4e9d84730dd7fa7&mpshare=1&scene=1&srcid=&sharer_sharetime=1567043328434&sharer_shareid=e53fc678b87c854a7577418ee1c671ac&pass_ticket=6%2BFt82b20NkDrXw7JtruZMEmpKehLR8Y1SJBjeUyIHfZ%2FAO1GgK5sIACDx8vanDS#rd)提及了NLP的一些主流模型。
 
 - 词向量的表示模型（word embedding）
@@ -464,7 +470,7 @@ $$
 
 2018年3月份，ELMo(Embeddings from Language Models)出世，该paper是NAACL18 Best Paper。在之前2013年的word2vec及2014年的GloVe的工作中，每个词对应一个vector，对于多义词无能为力。ELMo的工作对于此，提出了一个较好的解决方案。不同于以往的一个词对应一个向量，是固定的。在ELMo世界里，预训练好的模型不再只是向量对应关系，而是一个训练好的模型。使用时，将一句话或一段话输入模型，模型会根据上线文来推断每个词对应的词向量。这样做之后明显的好处之一就是对于多义词，可以结合前后语境对多义词进行理解。比如appele，可以根据前后文语境理解为公司或水果。
 
-#### 5.1.2 模型原理
+#### 5.1.1 模型原理
 
 ELMo是一个双向的语言模型，给定一段话，这段话包含$N$个token，$(t_1, t_2, \ldots, t_N)$。前向语言模型通过给定历史$k-1$个token$(t_1, t_2, \ldots, t_{k-1})$来预测第$k$个token出现的概率，则整个序列可以表示为，
 $$
@@ -488,7 +494,7 @@ $$
 
 接下来则是根据上图模型结构生成对应的词向量。
 
-#### 5.1.3 词向量
+#### 5.1.2 词向量
 
 对于每个token$t_k$，$L$层的双向语言模型可以得到$2L+1$个表达，
 $$
@@ -507,7 +513,7 @@ $$
 
 最终使用词向量时可以做词向量的拼接作为最终词向量，如$[x_k; ELMo_k^{task}]$，$[h_k;ELMo_k^{task}]$（任务为SNLI，SQuAD，*个人理解$h_k$是通过其他模型RNNs,CNNs结合$x_k$得到一个中间表示*）
 
-#### 5.1.4 总结
+#### 5.1.3 总结
 
 作者论文中$L=2$，词向量维度为512，作者通过实验表名在双向语言模型中，越高层表示对词义消歧做的越好（表明越高层越能捕获词意信息），而低层更能学习到词的句法信息和词性信息。总体而言，biLM每层学到的东西是不一样的，所以将他们叠加起来，对任务有较好的的提升。
 
@@ -520,11 +526,172 @@ $$
 
 ### 5.2 OpenAI GPT
 
+GPT提出一种半监督的方式来处理语言理解的任务。使用非监督的预训练和监督方式的微调。我们的目标是学习一个通用的语言标示，可以经过很小的调整就应用在各种任务中。这个模型的设置不需要目标任务和非标注的数据集在同一个领域。模型有两个过程,
 
+1. 通过语言模型在无标签的数据上学习一个深度模型
+2. 随后通过相应的监督目标在有标记的数据上微调这个深度模型
+
+#### 5.2.1 模型原理
+
+- 无监督预训练（Unsupervised pre-training）
+
+  假设我们的语料库的token为$U=\{u_1,u_2,\ldots,u_n\}$，然后通过语言模型的目标函数来极大化极大似然，
+  $$
+  L_1(U)=\sum_i \log p(u_i|u_{i-k},\ldots,u_{i-1}, \Theta)
+  $$
+  其中$k$是滑动窗口，$\Theta$为模型的参数
+
+  训练的模型为多层的Transformer decoder，简述如下，
+  $$
+  \begin{align}
+  h_0 &= UW_e + W_p \\
+  h_l &= \rm{transformer\_block}(h_{l-1})\ \forall i \in [1,n] \\
+  P(u) &= \rm{softmax}(h_nW_e^T)
+  \end{align}
+  $$
+  其中$U=(u_{-k},\ldots,u_{-1})$是语料context vector，$W_e$为token的embedding矩阵，$W_p$为position embedding矩阵，$n$为transformer的层数。
+
+- 有监督微调（Supervised fine-tuning）
+
+  假设有标记的训练数据为$C$，其中一个样本其输入的token为$\{x^1, \ldots, x^m\}$，标签为$y$。
+
+  在得到上面的预训练模型后，只需要将上面训练数据集输入的token输入至预训练模型中，得到最优一个transformer block的输出$h_l^m$，然后后面接一个全连接层和softmax即可，
+  $$
+  P(y|x^1, \ldots, x^m)=\rm{softmax}(h_l^mW_y)
+  $$
+  则有标记数据集上优化的目标函数为
+  $$
+  L_2(C) = \sum_{(x,y)} \log P(y|x^1, \ldots, x^m)
+  $$
+  之后发现将语言模型的目标函数加入起到了不错的效果，此时的目标函数为
+  $$
+  L_3(C) = L_2(C) + \lambda L_1(C)
+  $$
+
+  > 整体看来，预训练阶段需要更新的参数为$W_y$和一些特殊标记的词向量（多输入文本的分割标记）
+
+  Open AI GPT模型的框架图如下，
+
+  ![](../../pics/openai_gpt.png)
+
+#### 5.2.2 词向量
+
+GPT的词向量表达没有ELMo复杂（涉及到多层向量的线性加权），就是最后一层（最后一个transformer block, $h_l^m$ ）的输出作为词向量，然后接一个全连接层和softmax层即可。
+
+#### 5.2.3 总结
+
+GPT整体对未标记数据来预训练，然后通过有标记数据来微调模型。在预训练阶段，共使用了12层transformer层，最后生成的词向量维度为512。
+
+- 优点
+
+  - 采用了预训练+微调的模式，在多个NLP任务中取得了SOTA的效果。
+
+  - 预训练阶段采用了Transformer结构，能更好的捕获文本的长距离依赖。
+  - 在微调阶段将语言模型的目标加到整体目标函数中，增加了监督模型的泛化能力且加快模型的收敛速度。
+
+- 缺点
+
+  - 预训练模型的学习目标为单向语言模型，未考虑预测词汇的整体的context，会存在一定损失
 
 ### 5.3 BERT
 
+BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation，在整体网络模式上和Open AI GPT类似，分为预训练和微调两个阶段。
 
+BERT的整体网络结构由多层的Transformer Decoder组成，如下图所示，
+
+![](../../pics/bert.jpg)
+
+#### 5.3.1 模型原理
+
+**输入表示**
+
+BERT的输入的编码向量（长度是512）是3个嵌入特征的单位和，如图下图，这三个词嵌入特征是：
+
+1. word piece嵌入（WordPiece Embedding），word piece是指将单词划分为一组有限的公共字词单元能在单词的有效性和字符的灵活性之间取得一个折中的平衡。例如图4的示例中‘playing’被拆分成了‘play’和‘ing’；（在中文应该是字粒度，没有这一说了）
+2. 未知嵌入（Position Embedding），位置嵌入是指将单词的位置信息编码成特征向量，位置嵌入是向模型中引入单词位置关系的至关重要的一环。
+3. 分割嵌入（Segment Embedding），用于区分两个句子，例如B是否是A的下文（对话场景，问答场景等）。对于句子对，第一个句子的特征值是0，第二个句子的特征值是1。
+
+![](../../pics/bert_input_embedding.jpg)
+
+> 上图中，有两个特殊符号[CLS]和[SEP]，其中[CLS]用来表示该特征可以用于分类模型，对于非分类模型，该符号可以省略；[SEP]表示分句符号，用于断开输入语料中的两个句子。
+
+##### 5.3.1.1 预训练任务
+
+BERT是一个多任务模型，它的任务是由两个自监督任务组成，即MLM和NSP。
+
+**Task 1: Masked LM**
+
+为了训练一个比较深的双向表示，将输入进行了随机的mask，然后mask的内容作学习的目标。最终从输入中随机选择15%mask，将这些token作为预测目标。
+
+在BERT的实验中，15%的WordPiece Token会被随机Mask掉。在训练模型时，一个句子会被多次喂到模型中用于参数学习，但是BERT并没有在每次都mask掉这些单词，而是在确定要Mask掉的单词之后，80%的时候会直接替换为[Mask]，10%的时候将其替换为其它任意单词，10%的时候会保留原始Token。
+
+- 80%：`my dog is hairy -> my dog is [mask]`
+- 10%：`my dog is hairy -> my dog is apple`
+- 10%：`my dog is hairy -> my dog is hairy`
+
+> 原因：如果句子中某个token100%mask掉，在fine-tuning的时候模型就会有一些没有见过的单词；加入随机token的原因就是想保持对每个输入token的分布式表征，否则模型就会记住这个[mask]为token 'hairy'，当然也会带来一些负面影响，不过一个单词随机替换的概率为15%*10%=1.5%，比例很小，可以忽略。
+
+> 论文提到因为只选取15%的token进行预测，所以模型整体的收敛速度很慢，但是最终的效果很好。
+
+**Task 2: Next Sentence Prediction**
+
+Next Sentence Prediction（NSP）的任务是判断句子B是否是句子A的下文。如果是的话输出`IsNext`，否则输出`NotNext`。训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话是随机从预料中提取的，它们的关系是NotNext的。这个关系保存在图4中的`[CLS]`符号中。形如下，
+
+```
+Input = [CLS] the man went to [MASK] store [SEP]
+he bought a gallon [MASK] milk [SEP]
+Label = IsNext
+
+Input = [CLS] the man [MASK] to the store [SEP]
+penguin [MASK] are flight ##less birds [SEP]
+Label = NotNext
+```
+
+##### 5.3.1.2 微调任务
+
+对于不同的任务，只需在BERT的基础上调整一下输入和输出即可，分类任务下，只需要取标记[CLS]最终的embedding$C, C \in R^H$，加一层权重$W, W \in R^{K*H}$，然后softmax即可得到预测概率，
+$$
+P=softmax(CW^T)
+$$
+对于其他学习任务需要做不同的调整，如下，
+
+![](../../pics/bert_finetune.png)
+
+#### 5.3.2 词向量
+
+主要是两种表征方式，一个是微调预训练模型，另外一个是直接通过预训练模型产生词向量（feature-based）。
+
+- 微调预训练模型
+
+  这个就是上面所说的方式，基于预训练的模型，根据目标任务建立目标函数，微调BERT模型。
+
+- 直接产生词向量（featuer-based）
+
+  相当于不需要微调模型，直接基于预训练的模型产生词向量，然后根据目标任务后面接其它的层。
+
+  > 论文提到这种方式可以实现不错的效果，一些任务上要比微调的方式差些
+
+#### 5.3.3 总结
+
+BERT最后训练了两组参数的模型，BERT(base)（L=12, H=768, A=12, 整体参数量110M）和BERT(LARGE)（L=24,H=1024,A=16, 整体参数量340M）
+
+其中L表示网络（transformer block）的层数，H表示隐层大小，A表示self-attention的数量。
+
+- 优点
+
+  - 在NLP领域创建了一个真正意义上的深度模型，在此之前ELMo模型整体也就是二层的BiLSTM
+  - 提出了双向Transformer encoder表示，语言模型中利用了预测词的context（GPT是单向，ELMo虽然是双向但是分开训练，两个目标函数），学习到的表征能够融合两个方向上的context。
+  - 预训练时采用MLM和NSP联合构建构建学习的目标函数（可以通俗理解为玩型填空和句对预测）。
+
+  > 个人理解，加入MLM机制主要原因是想训练深层的语言模型，其次是单词的双向语言表征，如果不加入MLM，每个词预测的话，显然不适用深度模型；加入NSP为了增加两个句子之间的理解，实验证明这对QA和NLI任务有很大的帮助。
+
+- 缺点
+
+  - 在MLM中，随机mask一些token，默认词之间相互独立，这会损失一些信息，这个促使了XLNet的诞生。
+
+- 疑问
+
+  倘若不加MLM的话，也就是每个单词进行预测，来构建深层双向模型，会存在什么问题？
 
 ### 5.4 GPT-2
 
@@ -562,3 +729,10 @@ $$
 
 - [ELMo原理解析及简单上手使用](https://zhuanlan.zhihu.com/p/51679783)
 
+- [自然语言处理中的语言模型预训练方法（ELMo、GPT和BERT）](https://www.cnblogs.com/robert-dlut/p/9824346.html)
+
+- [BERT详解](https://zhuanlan.zhihu.com/p/48612853)
+
+- [图解BERT模型：从零开始构建BERT](https://cloud.tencent.com/developer/article/1389555)
+
+- [如何评价 BERT 模型？](https://www.zhihu.com/question/298203515)
