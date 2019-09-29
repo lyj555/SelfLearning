@@ -736,3 +736,4 @@ BERT最后训练了两组参数的模型，BERT(base)（L=12, H=768, A=12, 整�
 - [图解BERT模型：从零开始构建BERT](https://cloud.tencent.com/developer/article/1389555)
 
 - [如何评价 BERT 模型？](https://www.zhihu.com/question/298203515)
+

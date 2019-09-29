@@ -5,8 +5,8 @@ import keras.backend as K
 
 
 class TrigPosEmbedding(keras.layers.Layer):
-    """Position embedding use sine and cosine functions.
-    See: https://arxiv.org/pdf/1706.03762
+    """Position embedding use sine and cosine functions(Transformer).
+    non trainable params
     Expand mode:
         # Input shape
             2D tensor with shape: `(batch_size, sequence_length)`.
@@ -71,9 +71,9 @@ class TrigPosEmbedding(keras.layers.Layer):
         elif self.mode == self.MODE_CONCAT:
             batch_size, seq_len, output_dim = input_shape[0], input_shape[1], self.output_dim
             pos_input = K.tile(K.expand_dims(K.arange(0, seq_len), axis=0), [batch_size, 1])
-        else:
+        else:  # expand mode
             output_dim = self.output_dim
-            pos_input = inputs
+            pos_input = inputs  # batch_size * seq_len
         if K.dtype(pos_input) != K.floatx():
             pos_input = K.cast(pos_input, K.floatx())
         evens = K.arange(0, output_dim // 2) * 2
@@ -102,3 +102,38 @@ class TrigPosEmbedding(keras.layers.Layer):
         if self.mode == self.MODE_ADD:
             output += inputs
         return output
+
+
+if __name__ == "__main__":
+    import numpy as np
+
+    seq_len = np.random.randint(1, 10)
+    embd_dim = np.random.randint(1, 20) * 2
+    indices = np.expand_dims(np.arange(seq_len), 0)  # batch_size * seq_len
+
+    # test expand mode
+    model = keras.models.Sequential()
+    model.add(TrigPosEmbedding(
+        input_shape=(seq_len,),
+        mode=TrigPosEmbedding.MODE_EXPAND,
+        output_dim=embd_dim,
+        name='Pos-Embd',
+    ))
+    model.compile('adam', 'mse')
+    model.summary()
+
+    # model_path = os.path.join(tempfile.gettempdir(), 'test_trig_pos_embd_%f.h5' % np.random.random())
+    # model.save(model_path)
+    # model = keras.models.load_model(model_path, custom_objects={'TrigPosEmbedding': TrigPosEmbedding})
+    # model.summary()
+    predicts = model.predict(indices)[0].tolist()
+    for i in range(seq_len):
+        for j in range(embd_dim):
+            actual = predicts[i][j]
+            if j % 2 == 0:
+                expect = np.sin(i / 10000.0 ** (float(j) / embd_dim))
+            else:
+                expect = np.cos(i / 10000.0 ** ((j - 1.0) / embd_dim))
+            assert round(actual, 3) == round(expect, 3), f"{expect} != {actual}"
+
+
