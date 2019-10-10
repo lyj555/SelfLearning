@@ -461,6 +461,10 @@ $$
 
   总体来说，为什么自注意力模型（self-Attention model）如此强大：利用注意力机制来“动态”地生成不同连接的权重，从而处理变长的信息序列。
 
+### 4.3 Transformer-XL
+
+
+
 
 ## 5. Contextual Word Embedding
 
@@ -608,7 +612,7 @@ BERT的整体网络结构由多层的Transformer Decoder组成，如下图所示
 BERT的输入的编码向量（长度是512）是3个嵌入特征的单位和，如图下图，这三个词嵌入特征是：
 
 1. word piece嵌入（WordPiece Embedding），word piece是指将单词划分为一组有限的公共字词单元能在单词的有效性和字符的灵活性之间取得一个折中的平衡。例如图4的示例中‘playing’被拆分成了‘play’和‘ing’；（在中文应该是字粒度，没有这一说了）
-2. 未知嵌入（Position Embedding），位置嵌入是指将单词的位置信息编码成特征向量，位置嵌入是向模型中引入单词位置关系的至关重要的一环。
+2. 位置嵌入（Position Embedding），位置嵌入是指将单词的位置信息编码成特征向量，位置嵌入是向模型中引入单词位置关系的至关重要的一环。
 3. 分割嵌入（Segment Embedding），用于区分两个句子，例如B是否是A的下文（对话场景，问答场景等）。对于句子对，第一个句子的特征值是0，第二个句子的特征值是1。
 
 ![](../../pics/bert_input_embedding.jpg)
@@ -736,3 +740,4 @@ BERT最后训练了两组参数的模型，BERT(base)（L=12, H=768, A=12, 整�
 - [图解BERT模型：从零开始构建BERT](https://cloud.tencent.com/developer/article/1389555)
 
 - [如何评价 BERT 模型？](https://www.zhihu.com/question/298203515)
+
