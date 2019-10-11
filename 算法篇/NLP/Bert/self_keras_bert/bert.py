@@ -159,18 +159,18 @@ class BertModel(object):
             layers = input_layers
         # Self Attention
         xi = x
-        x = layers[0]([x, x, x], v_mask=sequence_mask, a_mask=attention_mask)
+        x = layers[0]([x, x, x], v_mask=sequence_mask, a_mask=attention_mask)  # multi-head attention
         if self.dropout_rate > 0:
             x = layers[1](x)
-        x = layers[2]([xi, x])
-        x = layers[3](x)
+        x = layers[2]([xi, x])  # residual add
+        x = layers[3](x)  # layer  normalization
         # Feed Forward
         xi = x
-        x = layers[4](x)
+        x = layers[4](x)   # feed forward
         if self.dropout_rate > 0:
             x = layers[5](x)
-        x = layers[6]([xi, x])
-        x = layers[7](x)
+        x = layers[6]([xi, x])  # residual add
+        x = layers[7](x)  # layer normalization
         return x, layers
 
     def compute_attention_mask(self, layer_id, segment_ids):
