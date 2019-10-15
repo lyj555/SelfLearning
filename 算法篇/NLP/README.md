@@ -1002,19 +1002,33 @@ BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XL
 
   一个例子为例，假设句子为[New, York, is, a, city]。假设BERT和XLNet均挑选[New, York]作为预测目标，那么两者的的目标函数分别为：
   $$
-  
+  \begin{cases}
+  Loss_{bert} = \log p(\rm{New}| \rm{is}\ \rm{a}\ \rm{city}) + \log p(\rm{York} | \rm{is}\ \rm{a}\ \rm{city}) \\
+  Loss_{xlnet} = \log p(\rm{New}| \rm{is}\ \rm{a}\ \rm{city}) + \log p(\rm{York} | \rm{New}\ \rm{is}\ \rm{a}\ \rm{city})
+\end{cases}
   $$
+
+  上面可以看出XLNet可以学习到pair(New, York)之间的依赖关系，而BERT则忽略了这种关系的学习，整体来看XLNet学习到的关系关系要多多于BERT。
   
-
-  
-
-  在预测某个被Mask单词的时候，其它被Mask单词不起作用，这个问题，你深入思考一下，其实是不重要的，因为XLNet在内部Attention Mask的时候，也会Mask掉一定比例的上下文单词，只要有一部分被Mask掉的单词，其实就面临这个问题。而如果训练数据足够大，其实不靠当前这个例子，靠其它例子，也能弥补被Mask单词直接的相互关系问题，因为总有其它例子能够学会这些单词的相互依赖关系（仅是张老师的观点，未见得准确）。
-
-
+  不过张俊林老师在其文章中指出：在预测某个被Mask单词的时候，其它被Mask单词不起作用，这个问题，你深入思考一下，其实是不重要的，因为XLNet在内部Attention Mask的时候，也会Mask掉一定比例的上下文单词，只要有一部分被Mask掉的单词，其实就面临这个问题。而如果训练数据足够大，其实不靠当前这个例子，靠其它例子，也能弥补被Mask单词直接的相互关系问题，因为总有其它例子能够学会这些单词的相互依赖关系（仅是张老师的观点，未见得准确）。
 
 #### 5.5.5 总结
 
 整体来看，XLNet就是围绕着BERT存在的一些缺点而提出了一系列改进方案，但是也保留了当前BERT和其它一些模型的有点，比如GPT2和Transformer-XL，在预训练阶段通过PLM(Permutation Language Model)，吸收了BERT的双向语言模型优势；GPT2的核心是采用了更过且质量更好的数据来预训练，这个特点同样被XLNet吸收进来；同样借鉴了Transformer-XL的思想来处理长文本以及通过相对位置编码来处理多输入片段。
+
+最后结合实验效果来看，最终XLNet起作用的，宏观归纳一下三个因素：
+
+1. PLM(Permutation Language Model)
+
+   采用这种方式主要是为了在自回归的模式下，来融入双向语言信息，BERT中采用的MLM(maked language model)，这种方式存在两个问题，一个是默认假设了token间是相互独立，在学习时也会损失一些token依赖信息；另外一个则是会导致预训练阶段和fine tune阶段模式不一致。
+
+2. 引入Tranformer-XL的思路
+
+   主要引用包含两点，一个是分段RNN机制，可以处理更长的文本信息；另外一个是相对位置编码，可以对更多的片段提取更多信息。
+
+3. 增加了预训练阶段使用的数据规模以及质量
+
+   这部分思路感觉是借鉴了GPT2的想法，大数据量+高质量的数据可以极大提升预训练的效果。
 
 ## 6. NLP任务模型
 
