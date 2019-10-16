@@ -208,9 +208,23 @@
 
 ## 3. 词向量（WordEmbedding）
 
-这部分主要复习word2vec、fasttext和glove
+这部分主要复习word2vec、fasttext和glove。
 
 ### 3.1 word2vec
+
+NLP 里的词语，是人类的抽象总结，是符号形式的（比如中文、英文、拉丁文等等），所以需要把他们转换成数值形式，或者说——嵌入到一个数学空间里，这种嵌入方式，就叫词嵌入（word embedding)，而 word2vec，就是词嵌入（ word embedding) 的一种。
+
+在word2vec中，有两个训练的模型，分别为CBOW(Continuous Bag-Of-Words)和SG(Skig-Gram)模型，还有关于模型的训练技巧，主要包括HS(hierarchical softmax)和NS(negative sampling)。
+
+#### 3.1.1 CBOW
+
+
+
+#### 3.1.2 Skip-Gram
+
+
+
+#### 3.1.3 HS&NS
 
 
 
