@@ -218,7 +218,31 @@ NLP 里的词语，是人类的抽象总结，是符号形式的（比如中文�
 
 #### 3.1.1 CBOW
 
+CBOW的模式为给定一个词的上下文，然后来预测这个词。如下图所示，
 
+![](../../pics/word2vec_cbow.jpg)
+
+上图便是CBOW基本框架，整体可以表示给定一个词上下文的$C$个词，然后来预测这个词。
+
+上图中CBOW模型共分为三层，分别为输入层、隐藏层和输出层。
+
+- 输入层
+
+  输入层为输入的上下文的$C$个词，分别为$x_{1k}, \ldots, x_{Ck}$，在模型中one-hot encoder来表示每一个词。
+
+- 隐藏层
+
+  将输入层的$C$个词向量相加求平均便来到隐藏层。
+
+- 输出层
+
+  由隐藏层再映射回词表大小$V$的向量，其中概率最大位置，便表示模型预测的词汇。
+
+上图整体运行模式为，首先根据训练数据（语料库）构建好词表，该词表的大小为$V$，表示词表中存在$V$个词汇，之后根据词表将输入的$C$个词汇进行one-hot encoder编码，然后初始化一个权重矩阵$W_{V \times N}$，其中$N$表示词向量的维度，可以自己设置。然后用one-hot encoder编码做成权重矩阵得到每个词向量，然后将他们相加求平均得到隐藏层向量，然后初始化另外一个权重矩阵$W^{\prime}_{N \times V}$，然后用隐藏向量左乘$W^{\prime}$，然后通过softmax将其归一至输出层，输出层的向量维度为$V$其中每一个值表示此表中对应词的概率。
+
+在训练阶段，则需要定义好损失函数（可以理解为一个多分类，往往采用交叉熵损失函数），以此来进行反向传播更新模型参数。
+
+> 在模型训练好后，其实并不需要模型来预测，只需要使用每个词的one-hot encoder编码乘以矩阵$W_{V \times N}$得到$N$维向量便是这个词的向量。因为one-hot encoder中只有一个1，其余为0，所以此表中第$i$个词的词向量便是矩阵$W$的第$i$行，得到词向量往往也会称为word embedding，而这个矩阵$W$往往称为look up table，相当于直接查表便可以得到一个词的向量表示。
 
 #### 3.1.2 Skip-Gram
 
@@ -1080,7 +1104,8 @@ BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XL
 - [效果惊人的GPT 2.0模型：它告诉了我们什么](https://zhuanlan.zhihu.com/p/56865533)
 - [如何评价openAI GPT-2?](https://www.zhihu.com/question/312405015)
 - [GPT,GPT2,Bert,Transformer-XL,XLNet论文阅读速递](https://zhuanlan.zhihu.com/p/72985558)
-
 - [XLNet:运行机制及和Bert的异同比较](https://zhuanlan.zhihu.com/p/70257427)
 - [【NLP】XLNet粗读](https://zhuanlan.zhihu.com/p/70218096)
+- [Word2Vec详解](https://zhuanlan.zhihu.com/p/61635013)
+- [[NLP] 秒懂词向量Word2vec的本质](https://zhuanlan.zhihu.com/p/26306795)
 
