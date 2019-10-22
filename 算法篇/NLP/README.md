@@ -210,7 +210,7 @@
 
 这部分主要复习word2vec、fasttext和glove。
 
-### 3.1 word2vec
+### 3.1 Word2ec
 
 NLP 里的词语，是人类的抽象总结，是符号形式的（比如中文、英文、拉丁文等等），所以需要把他们转换成数值形式，或者说——嵌入到一个数学空间里，这种嵌入方式，就叫词嵌入（word embedding)，而 word2vec，就是词嵌入（ word embedding) 的一种。
 
@@ -242,7 +242,7 @@ CBOW的模式为给定一个词的上下文，然后来预测这个词。如下�
 
 在训练阶段，则需要定义好损失函数（可以理解为一个多分类，往往采用交叉熵损失函数），以此来进行反向传播更新模型参数。
 $$
-\text{Loss} = \sum_i \ \Bbb{I}_{i\in V} \cdot \text{log} p(w|\text{Context}(w))
+\text{Loss} = -\sum_i \ \Bbb{I}_{i\in V} \cdot \text{log} p(w|\text{Context}(w))
 $$
 
 > 在模型训练好后，其实并不需要模型来预测，只需要使用每个词的one-hot encoder编码乘以矩阵$W_{V \times N}$得到$N$维向量便是这个词的向量。因为one-hot encoder中只有一个1，其余为0，所以此表中第$i$个词的词向量便是矩阵$W$的第$i$行，得到词向量往往也会称为word embedding，而这个矩阵$W$往往称为look up table，相当于直接查表便可以得到一个词的向量表示。
@@ -275,9 +275,24 @@ Skip-Gram和CBOW正好相反，为给定一个词，通过这个词来预测它�
 
 > 在论文中，作者指出指出对于小规模数据集，选择5-20个negative words会比较好，对于大规模数据集可以仅选择2-5个negative words。
 
-### 3.2 fasttext
+### 3.2 Fasttext
+
+fastText是Facebook于2016年开源的一个词向量计算和文本分类工具，在学术上并没有太大创新。但是它的优点也非常明显，在文本分类任务中，fastText（浅层网络）往往能取得和深度网络相媲美的精度，却在训练时间上比深度网络快许多数量级。在标准的多核CPU上， 能够训练10亿词级别语料库的词向量在10分钟之内，能够分类有着30万多类别的50多万句子在1分钟之内。
+
+#### 3.2.1 n-gram 特征
 
 
+
+#### 3.2.2 模型架构
+
+
+
+#### 3.2.3 核心思想
+
+
+
+- [fastText原理及实践](https://zhuanlan.zhihu.com/p/32965521)
+- [NLP︱高级词向量表达（二）——FastText（简述、学习笔记）](https://blog.csdn.net/sinat_26917383/article/details/54850933)
 
 ### 3.3 glove
 
