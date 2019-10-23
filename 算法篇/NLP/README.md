@@ -1158,7 +1158,7 @@ BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XL
 
 接下来着重拿PLM(Permutation Language Model)和BERT比较一下，PLM是XLNet的核心创新点，下面的比较主要参考了张俊林老师的[XLNet:运行机制及和Bert的异同比较](https://zhuanlan.zhihu.com/p/70257427)。
 
-- BERT预训练里带有[Mask]标记导致的和Fine-tuning过程不一致的问题
+- BERT预训练里带有[Mask]标记导致的和fine-tuning过程不一致的问题
 
   尽管看上去，XLNet在预训练机制引入的Permutation Language Model这种新的预训练目标，和BERT采用Mask标记这种方式，有很大不同。其实深入思考一下，会发现，两者本质是类似的。区别主要在于：BERT 是直接在输入端显示地通过引入Mask标记，在输入侧隐藏掉一部分单词，让这些单词在预测的时候不发挥作用，要求利用上下文中其它单词去预测某个被Mask掉的单词；而XLNet则抛弃掉输入侧的Mask标记，通过Attention Mask机制，在Transformer内部随机Mask掉一部分单词（这个被Mask掉的单词比例跟当前单词在句子中的位置有关系，位置越靠前，被Mask掉的比例越高，位置越靠后，被Mask掉的比例越低），让这些被Mask掉的单词在预测某个单词的时候不发生作用。所以，本质上两者并没什么太大的不同，只是Mask的位置，Bert更表面化一些，XLNet则把这个过程隐藏在了Transformer内部而已， 这样，就可以抛掉表面的[Mask]标记。
 
