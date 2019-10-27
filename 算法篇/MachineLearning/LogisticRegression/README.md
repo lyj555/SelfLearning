@@ -146,7 +146,7 @@ $$
 $$
 \begin{aligned}
 \log \frac{p(y=1|x)}{p(y=0|x)}
-&=\log \frac{p(x|y=1) \cdot p(y=1)}{p(x|y=0) \cdot p(y=1)}\\
+&=\log \frac{p(x|y=1) \cdot p(y=1)}{p(x|y=0) \cdot p(y=0)}\\
 &=\log \frac{p(x|y=1)}{p(x|y=0)} + \log \frac{p(y=1)}{p(y=0)}\\
 &=-\frac{(x-\mu_1)^2}{2\sigma_1^2}+\frac{(x-\mu_0)^2}{2\sigma_0^2}+\theta_0
 \end{aligned}
