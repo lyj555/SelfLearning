@@ -87,7 +87,7 @@ catboost有两种boosting模式，分别为`ordered`和`plain`
 
 计算当前的的梯度$grad$，然后从$s$个打乱中随机选择一个记为$r$。
 
-如果$Mode$为$Plain$则根据打算顺序重新排列一下梯度即可，如果$Mode$为$Ordered$则只用前$i-1$个梯度值。
+如果$Mode$为$Plain$则根据打乱顺序重新排列一下梯度即可，如果$Mode$为$Ordered$则只用前$i-1$个梯度值。
 
 下面为建树过程，
 

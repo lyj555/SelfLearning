@@ -4,8 +4,6 @@
 
 xgboost，类似GBDT算法，是boosting算法框架的一种。
 
-
-
 ## 1. Algorithm Frameworks
 
 假设数据有$n$个样本，每个样本有$m$个特征，将其表示为$D=\{(\boldsymbol{x}_i,y_i)\}, |D|=n, \boldsymbol{x}_i \in R^m, y_i \in R$
@@ -107,7 +105,16 @@ $$
 $$
 上式可以理解为两个候选点之间所对应的的样本权重应该小于$\epsilon$，直观理解这种定义方式大约有$\frac{1}{\epsilon}$个候选点。
 
-> 其中上面的$h_i$可以看做是每个样本的权重，而近似算法中，可以看做是每个样本均为1
+论文也提到为什么会用二阶导作为样本的权重，如下
+$$
+\begin{aligned}
+L^{(t)} &\approx \sum_{i=1}^n[g_i f_t(\boldsymbol{x_i}) + \frac{1}{2}h_if_t^2(\boldsymbol{x_i})]+\Omega(f_t) + const \\
+&= \sum_{i=1}^n \frac{1}{2} h_i (f_t(\boldsymbol{x_i}) - g_i/h_i)^2 + \Omega(f_t) + const
+\end{aligned}
+$$
+
+
+> 其中上面的$h_i$可以看做是每个样本的权重，而近似算法中，可以看做是每个样本权重均为1
 
 ### 2.4. Sparsity-aware Split Finding
 
@@ -125,7 +132,11 @@ $$
 
 - exact greedy algorithm
 
-  之前的方式的算法复杂度相当于$O(Kd||x||_0\log n)$，其中$||x||_0$表示非缺失元素的个数，采用预存储的方式后，复杂度为$O(Kd||x||_0+||x||_0\log n)$。
+  之前的方式的算法复杂度相当于$O(Kd||x||_0\log n)$，采用预存储的方式后，复杂度为$O(Kd||x||_0+||x||_0\log n)$。
+
+  其中$K$表示树的颗数，$d$表示每棵树的最大深度，$||x||_0$表示非缺失元素的个数，$n$为样本数量。
+
+  > 可以理解为非空元素排序一遍($||x||_0 \log n$)后，就可以了，后面不需要重复排序
 
 - approximate algorithms
 
@@ -143,7 +154,7 @@ $$
   
   > Specifically, we allocate an internal buffer in each thread, fetch the gradient statistics into it, and then perform accumulation in a mini-batch manner. This prefetching changes the direct read/write dependency to a longer dependency and helps to reduce the runtime overhead when number of rows in the is large
   
-  当数据量较大时，这种方式会有显著的提速。
+  相当于在每个thread中添加了一个buffer，数据现在此累计一下，而不用直接完全依赖内存。当数据量较大时，这种方式会有显著的提速。
 
 - approximate algorithms
 
@@ -176,12 +187,16 @@ $$
 
 目前XGBoost的[官方文档](https://xgboost.readthedocs.io/en/latest/)仍在持续更新，整理这篇文章时XGBoost的官文最新版本为0.9.0，记得最早使用XGBoost的时候版本为0.6.0。
 
+> 2019年10月29日最新版本已经为1.0.0了，更新还是非常快啊
+
 XGBoost有很多语言版本，比如python，java，scala，Julia、R，Spark，Flink以及CLI方式。
 
 官方文档中也有[XGBoost原理](https://xgboost.readthedocs.io/en/latest/tutorials/model.html)的详细介绍，注意到里面涉及到损失函数一个概念，提及logistic regression的损失函数为如下，
 $$
 L(\theta) = \sum_i[ y_i\ln (1+e^{-\hat{y}_i}) + (1-y_i)\ln (1+e^{\hat{y}_i})]
 $$
+注意的是这里的$\hat{y}_i=\sum_{k=1}^K f_k(x_i)$，只是多个学习器的学习结果之和，要想得到概率输出需要做一个sigmoid变换，其实上面的式子就是原生的交叉熵损失的转变。
+
 相当于去掉sigmoid函数变换前的值，这个作为预测值$\hat{y_i}$，这个之前没有注意到，这种方式相当于统一了逻辑回归和XGBoost损失函数，当然逻辑回归损失进一步走下去的话，就是讲$\hat{y_i}$的表达式带入进入。
 
 - 参数调整
@@ -205,4 +220,16 @@ $$
     - If you care about predicting the right probability
 
       In such a case, you cannot re-balance the dataset， set parameter `max_delta_step` to a finite number (say 1) to help convergence
+
+---
+
+目前最新版本添加了两个special feature，
+
+- Monotonic Constraints
+
+  表明当某个特征取值连续增加或者减少时，其对应的模型得分也应当如此
+
+- Feature Interaction Constraints
+
+  表明哪部分特征是可以交互的（感觉这个是非常不错了，对于某些特定业务场景这个非常需要）
 
