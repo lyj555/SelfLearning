@@ -130,3 +130,21 @@ L1 & L2 正则化会使模型偏好于更小的权值。
 
 ## 8. 如何避免数值计算中的上溢和下溢问题，以 softmax 为例
 
+
+
+## 9. 为什么LSTM要优于RNN？
+
+- LSTM可以避免RNN中出现的梯度消失(gradient vanishing)，但是不能解决梯度爆炸（解决方式参考上面的问题）
+
+  > 了解[为什么相比于RNN，LSTM在梯度消失上表现更好？](https://www.zhihu.com/question/44895610)
+
+- 记住的信息长度更长
+
+## 10. 深度网络中出现过overfit往往怎么解决？
+
+- drop out
+- regularization
+-  batch normalization
+
+## 11. Jacobian，Hessian矩阵及其在深度学习中的重要性 
+

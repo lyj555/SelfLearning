@@ -61,16 +61,17 @@ RNN通常有三种设计模式，
 不同于上面的两种模式（每个时间步均有输出），该模式只有最后一个时间步有输出，这种网络一般用于概括序列。具体来说，就是产生固定大小的表示，用于下一步处理，在一些**Seq2One**中简单任务中，这种网络用的比较多,因为这些任务只需要关注序列的全局特征。
 
 > Note: 前两种RNN被称为Elman Network和Jordan Network，通常说的RNN指前者 
+>
 > - Elman RNN   
-> $$
- h^{(t)} = tanh(\boldsymbol{W}_hx^{(t)}+\boldsymbol{U_h}h^{(t-1)}+b_h \\
- y^{(t)} = softmax(\boldsymbol{W}_yh^{(t)}+b_y)
-$$
+    $$
+    h^{(t)} = tanh(\boldsymbol{W}_hx^{(t)}+\boldsymbol{U_h}h^{(t-1)}+b_h \\
+     y^{(t)} = softmax(\boldsymbol{W}_yh^{(t)}+b_y)
+    $$
 > - Jordan RNN   
-> $$
- h^{(t)} = tanh(\boldsymbol{W}_hx^{(t)}+\boldsymbol{U_h}y^{(t-1)}+b_h \\
- y^{(t)} = softmax(\boldsymbol{W}_yh^{(t)}+b_y)
-$$
+    $$
+    h^{(t)} = tanh(\boldsymbol{W}_hx^{(t)}+\boldsymbol{U_h}y^{(t-1)}+b_h \\
+     y^{(t)} = softmax(\boldsymbol{W}_yh^{(t)}+b_y)
+    $$
 
 ### 1.3 RNN Application  
 - Language Modeling and Generating Text   
