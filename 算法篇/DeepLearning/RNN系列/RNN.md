@@ -65,12 +65,12 @@ RNN通常有三种设计模式，
 > $$
  h^{(t)} = tanh(\boldsymbol{W}_hx^{(t)}+\boldsymbol{U_h}h^{(t-1)}+b_h \\
  y^{(t)} = softmax(\boldsymbol{W}_yh^{(t)}+b_y)
-  $$
+$$
 > - Jordan RNN   
 > $$
  h^{(t)} = tanh(\boldsymbol{W}_hx^{(t)}+\boldsymbol{U_h}y^{(t-1)}+b_h \\
  y^{(t)} = softmax(\boldsymbol{W}_yh^{(t)}+b_y)
-  $$
+$$
 
 ### 1.3 RNN Application  
 - Language Modeling and Generating Text   
@@ -87,8 +87,7 @@ Machine Translation is similar to language modeling in that our input is a seque
 - LSTM networks  
 
 ### 1.5 参考资源   
-- [Recurrent Neural Networks Tutorial, Part 1 – Introduction to RNNs
-](http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-1-introduction-to-rnns/)   
+- [Recurrent Neural Networks Tutorial, Part 1 – Introduction to RNNs](http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-1-introduction-to-rnns/)
 
 - [RNN基本结构](https://github.com/imhuay/Algorithm_Interview_Notes-Chinese/blob/master/A-%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/B-%E4%B8%93%E9%A2%98-RNN.md#rnn-%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84)
 
@@ -149,6 +148,7 @@ $$
 
 上式中，注意到$\frac{\partial s_j}{\partial s_{j_1}}$是对向量进行求偏导，所以结果是一个矩阵(Jacobian matrix)。因为tanh激活函数将值映射到(-1, 1)，导数范围(0, 1)，sigmoid激活函数将值映射到(0, 1)，导数范围(0, 0.25)，可以证明矩阵的二阶范数的上界是1. 一旦当矩阵中的值接近饱和，当矩阵相乘时，其值就会指数级别下降，造成梯度消失，换言之，这种现象导致RNN不能学习到长期的依赖关系。对于前馈神经网络来说当层数非常深时，也会面临同样的问题，梯度消失。  
 解决方式之一便是替换激活函数，比如换为Relu，但这样虽然可以避免梯度消失的问题，但是存在梯度爆炸问题（问题本质是各个单元的参数共享，还是存在矩阵连乘的问题），所以一个改进的方式是将参数$W$初始化为单位矩阵。  
+
 > 为什么CNN中使用Relu较少出现上面的问题
 > 主要原因是CNN中每层的参数$W$不同，且在初始化时，是独立同分布的，可以在一定程度上可以相互抵消，即使多层之后较小可能出现上面的问题
 
@@ -163,17 +163,15 @@ LSTM(Long Short-Term Memory)，长短期记忆神经网络，是循环神经网�
 LSTM网络的框架仍然标准的RNN框架（下图），而和标准RNN框架不同的是其计算隐含层的状态。标准的RNN计算计算隐藏层是
 $s_t = f(x_t, s_{t-1}) = \rm{tanh}(Ux_t+Ws_{t-1})$，其中$U,W$是参数，$x_t$是第$t$步的输入，$s_{t-1}$是$t-1$步的隐藏层计算的状态，而LSTM只是改进了函数$f$，可以理解$s_t = LSTM(x_t, s_{t-1})$，接下俩看LSTM的具体计算模式。
 <div> <img src="../../../pics/gru-lstm.png" style="zoom:80%" width="700px" /></div>
-
 ### 3.1 LSTM内部结构  
 - LSTM在标准RNN结构上加入了**门控机制**来限制信息的流动。 
 传统的LSTM（下）和标准RNN（上）内部比较  
 
 <div align="center"><img src="../../../pics/LSTM3-SimpleRNN.png" style="zoom:70%" width="700px" /></div>
 <div align="center"><img src="../../../pics/LSTM3-chain.png" style="zoom:70%" width="700px" /></div>
-
 - 总体来说，LSTM中加入了三个门：**遗忘门f**,**输入门i**,**输出门o**，以及一个**内部记忆状态C** 
     - 遗忘门f   
-    遗忘门控制前一步记忆状态中有多少可以被以往，相当于之前的记忆状态多大比例遗忘，如下所示  
+    遗忘门控制前一步记忆状态中有多少可以被遗忘，相当于之前的记忆状态多大比例遗忘，如下所示  
     <div> <img src="../../../pics/LSTM3-focus-f.png" style="zoom:80%" width="700px" /></div>
     - 输入门i   
     输入门控制当前的状态多大程度可以更新至记忆状态，相当于从目前的记忆中抽取一定的比例添加至记忆状态中，如下所示  
@@ -235,11 +233,8 @@ def LSTM_CELL(prev_ct, prev_ht, input):
     return ht, Ct
 ```
 ### 3.5 参考资源
-- [Understanding LSTM Networks
-](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)   
+- [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)   
 - [LSTM内部结构以及问题](https://github.com/imhuay/Algorithm_Interview_Notes-Chinese/blob/master/A-%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/B-%E4%B8%93%E9%A2%98-RNN.md#lstm-%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84)
-
-
 
 ## 4. GRU(2014)
 GRU(Gated Recurrent Unit)，和LSTM类似，也是带有门机制的循环神经网络。GRU中设计两个门，分别是更新门和重置门，其参数量要少于LSTM。  
