@@ -201,7 +201,40 @@ $$
 
 ## 11. Jacobian，Hessian矩阵及其在深度学习中的重要性 
 
+### 11.1 Jacobian
 
+向量分析中,雅可比矩阵是一阶偏导数以一定方式排列成的矩阵。
+
+假设$F: R^n \rightarrow R^m$是一个从欧式$n$维空间转换到欧式$m$维空间的函数。这个函数由$m$个实函数组成，$y1(x_1, x_2, \ldots, x_n), \ldots, ym(x_1, x_2, \ldots, x_n)$，假设这$m$个实函数的偏导数均存在，那么可以组成如下矩阵，
+$$
+\begin{bmatrix} 
+\frac{\partial y1}{\partial x_1} & \cdots & \frac{\partial y1}{\partial x_n} \\ 
+\vdots & \ddots & \vdots \\
+\frac{\partial ym}{\partial x_1} & \cdots & \frac{\partial ym}{\partial x_n}
+\end{bmatrix}
+$$
+此矩阵可以表示为$J_F(x_1, \ldots, x_n)$或者$\frac{\partial (y1, \ldots, ym)}{\partial (x_1, \ldots, x_n)}$，这个矩阵就是雅克比矩阵。
+
+其重要意义在于它表现了一个多变数向量函数的最佳线性逼近。因此，雅可比矩阵类似于单变数函数的导数。
+
+如果点$P$是$R^n$中的一点，函数$F$在点$P$可微，$J_F(P)$是这一点的导数。在此情况下，$J_F(P)$这个线性映射即函数$F$在点$P$附近的最优线性逼近，也就是说当点$x$足够靠近点$P$时，我们有
+$$
+F(x) \approx F(p) + J_F(P)(x-P)
+$$
+
+> 最后这个最有线性逼近不是很懂，搜了下基本上文章都是一大抄，哎
+
+### 11.2 Hessian Matrix
+
+对于函数$f: R^n \rightarrow R$，即$f(x_1, \ldots, x_n)$，假设其二阶偏导均存在，那么函数$f$的海森矩阵如下，
+$$
+\begin{bmatrix} 
+\frac{\partial^2f}{\partial x_1^2} & \cdots & \frac{\partial^2 f}{\partial x_n^2} \\ 
+\vdots & \ddots & \vdots \\
+\frac{\partial^2 f}{\partial x_1^2} & \cdots & \frac{\partial^2 f}{\partial x_n^2}
+\end{bmatrix}
+$$
+可以表示为$H(f)=D_iD_j f(x)$，海森矩阵主要应用在求根和最优化中，参考**算法篇/\OptimizationAlgorithms/NewtonMethod**
 
 ## 12. 批梯度下降法（Batch SGD）更新过程中，批的大小会带来怎样的影响？
 
