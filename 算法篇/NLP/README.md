@@ -155,6 +155,8 @@
 
   比如Entailment，QA，语义改写，自然语言推理等任务都是这个模式，它的特点是给定两个句子，模型判断出两个句子是否具备某种语义关系。
 
+  > QA两种方式，一种答案在文中存在，另一种是根据理解生成答案。
+
 - 生成式任务
 
   比如机器翻译，文本摘要，写诗造句，看图说话等都属于这一类。它的特点是输入文本内容后，需要自主生成另外一段文字。
@@ -872,7 +874,7 @@ GPT整体对未标记数据来预训练，然后通过有标记数据来微调�
 
 BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation，在整体网络模式上和Open AI GPT类似，分为预训练和微调两个阶段。
 
-BERT的整体网络结构由多层的Transformer Decoder组成，如下图所示，
+BERT的整体网络结构由多层的Transformer Encoder组成，如下图所示，
 
 ![](../../pics/bert.jpg)
 

@@ -174,6 +174,8 @@ $$
 
 将Decoder的堆栈输出作为输入，从底部开始，最终进行word预测。
 
+> 输出有两种方式，贪心（一个一个的往后吐）或者beam search（两个两个或者三个三个，按照两个最优的方式往后走）
+
 ![](../../../pics/transformer_output.webp)
 
 ## 3. CODE实现

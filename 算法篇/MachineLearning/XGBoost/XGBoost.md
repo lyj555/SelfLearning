@@ -154,7 +154,7 @@ $$
   
   > Specifically, we allocate an internal buffer in each thread, fetch the gradient statistics into it, and then perform accumulation in a mini-batch manner. This prefetching changes the direct read/write dependency to a longer dependency and helps to reduce the runtime overhead when number of rows in the is large
   
-  相当于在每个thread中添加了一个buffer，数据现在此累计一下，而不用直接完全依赖内存。当数据量较大时，这种方式会有显著的提速。
+  相当于在每个thread中添加了一个buffer，数据在此累计一下，而不用直接完全依赖内存。当数据量较大时，这种方式会有显著的提速。
 
 - approximate algorithms
 

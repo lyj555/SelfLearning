@@ -196,8 +196,11 @@ LightGBM的[官方文档](https://lightgbm.readthedocs.io/en/latest/)目前提�
     - LightGBM
 
       1. Instead of “Merge global histograms from all local histograms”, LightGBM uses “Reduce Scatter” to merge histograms of different (non-overlapping) features for different workers. Then workers find the local best split on local merged histograms and sync up the global best split.
+      
+       > 之前是每一部分生成直方图合并直方图然后找最优，现在是局部直方图找最优，然后汇总最优值得到全局最优
+      
       2. As aforementioned, LightGBM uses histogram subtraction to speed up training. Based on this, we can communicate histograms only for one leaf, and get its neighbor’s histograms by subtraction as well.
-
+  
   
 
 ### 4.2 参数调整
@@ -221,6 +224,6 @@ LightGBM的[官方文档](https://lightgbm.readthedocs.io/en/latest/)目前提�
   - Use bagging by set `bagging_fraction` and `bagging_freq`
   - Use feature sub-sampling by set `feature_fraction`
   - Use bigger training data
-  - Try `lambda_l1`, l`ambda_l2` and `min_gain_to_split` for regularization
+  - Try `lambda_l1`, `lambda_l2` and `min_gain_to_split` for regularization
   - Try `max_depth` to avoid growing deep tree
 
