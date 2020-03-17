@@ -6,7 +6,7 @@
 
 ### 1.1 句法分析（Lexical Analysis）
 
-句法分析是对自然语言词汇层面的分析，是NLP中最基础的工作，主要包括如下
+句法分析是对自然语言**词汇层面**的分析，是NLP中最基础的工作，主要包括如下
 
 - **分词（Word Segmentation/Tokenization）**
 
@@ -60,7 +60,7 @@
 
 ### 1.3 语义分析（Semantic Analysis）
 
-对给定文本进行分析和理解，形成能勾够表达语义的形式化表示或分布式表示
+对给定文本进行分析和理解，形成能够表达语义的形式化表示或分布式表示
 
 - 词义消歧（Word Sense Disambiguation）
 
@@ -118,7 +118,7 @@
 
   对文本的主观性情绪进行提取
 
-- 意图识别（Intent Detection）
+- **意图识别（Intent Detection）**
 
   对话系统中的一个重要模块，对用户给定的对话内容进行分析，识别用户意图
 
@@ -224,7 +224,11 @@ $$
 
 类似的平滑方法还有很多，如加法平滑、古德-图灵平滑和K平滑等等
 
-### 2.2 模型概述
+### 2.2 TF-IDF
+
+
+
+### 2.3 模型概述
 
 [这篇文章](https://mp.weixin.qq.com/s?__biz=MzA4MTk3ODI2OA==&mid=2650344227&idx=1&sn=a40c9f90fb58d8a28713d01214f41f00&chksm=87811dd0b0f694c615a4ecad32dceb9cabf425d25f231a1e3df5295807e8d4e9d84730dd7fa7&mpshare=1&scene=1&srcid=&sharer_sharetime=1567043328434&sharer_shareid=e53fc678b87c854a7577418ee1c671ac&pass_ticket=6%2BFt82b20NkDrXw7JtruZMEmpKehLR8Y1SJBjeUyIHfZ%2FAO1GgK5sIACDx8vanDS#rd)提及了NLP的一些主流模型。
 
@@ -246,7 +250,7 @@ $$
 
   > 该[文章](https://zhuanlan.zhihu.com/p/28054589)大致罗列了RNN模型和seq2seq以及Attention机制
 
-  *Attention机制最早是在视觉图像领域提出来的，应该是在九几年思想就提出来了，但是真正火起来应该算是2014年google mind团队的这篇论文《Recurrent Models of Visual Attention》，他们在RNN模型上使用了attention机制来进行图像分类。随后，Bahdanau等人在论文《Neural Machine Translation by Jointly Learning to Align and Translate》中，使用类似attention的机制在机器翻译任务上将翻译和对齐同时进行，他们的工作算是第一个将attention机制应用到NLP领域中。接着attention机制被广泛应用在基于RNN/CNN等神经网络模型的各种NLP任务中。2017年，google机器翻译团队发表的《Attention is all you need》中大量使用了自注意力（self-attention）机制来学习文本表示。自注意力机制也成为了大家近期的研究热点，并在各种NLP任务上进行探索。下图维attention研究进展的大概趋势。*
+  *Attention机制最早是在视觉图像领域提出来的，应该是在九几年思想就提出来了，但是真正火起来应该算是2014年google mind团队的这篇论文《Recurrent Models of Visual Attention》，他们在RNN模型上使用了attention机制来进行图像分类。随后，Bahdanau等人在论文《Neural Machine Translation by Jointly Learning to Align and Translate》中，使用类似attention的机制在机器翻译任务上将翻译和对齐同时进行，他们的工作算是第一个将attention机制应用到NLP领域中。接着attention机制被广泛应用在基于RNN/CNN等神经网络模型的各种NLP任务中。2017年，google机器翻译团队发表的《Attention is all you need》中大量使用了自注意力（self-attention）机制来学习文本表示。自注意力机制也成为了大家近期的研究热点，并在各种NLP任务上进行探索。*
 
 - Contextual Word Embedding
 
@@ -271,7 +275,7 @@ $$
 
 ### 3.1 Word2ec
 
-NLP 里的词语，是人类的抽象总结，是符号形式的（比如中文、英文、拉丁文等等），所以需要把他们转换成数值形式，或者说——嵌入到一个数学空间里，这种嵌入方式，就叫词嵌入（word embedding)，而 word2vec，就是词嵌入（ word embedding) 的一种。
+NLP 里的词语，是人类的抽象总结，是符号形式的（比如中文、英文、拉丁文等等），所以需要把他们转换成数值形式，或者说——嵌入到一个数学空间里，这种嵌入方式，就叫词嵌入（word embedding)，而 word2vec，就是词嵌入（word embedding）的一种。
 
 在word2vec中，有两个训练的模型，分别为CBOW(Continuous Bag-Of-Words)和SG(Skig-Gram)模型，还有关于模型的训练技巧，主要包括HS(hierarchical softmax)和NS(negative sampling)。
 
@@ -320,12 +324,14 @@ Skip-Gram和CBOW正好相反，为给定一个词，通过这个词来预测它�
 
 对于Hierarchical Softmax，其改进主要有两点，
 
-- 从输入层到隐藏层的映射，没有采用原先的与矩阵W相乘然后相加求平均的方法，而是直接对所有输入的词向量求和。假设输入的词向量为（0，1，0，0）和（0,0,0,1），那么隐藏层的向量为（0,1,0,1）。
+- 从输入层到隐藏层的映射，没有采用原先的与矩阵W相乘然后相加求平均的方法，而是直接对所有输入的词向量求和。假设输入的词向量为(0,1,0,0)和（0,0,0,1），那么隐藏层的向量为（0,1,0,1）。
 - 第二点改进是采用哈夫曼树来替换了原先的从隐藏层到输出层的矩阵$W^{\prime}$ 。哈夫曼树的叶节点个数为词汇表的单词个数$V$，一个叶节点代表一个单词，**而从根节点到该叶节点的路径确定了这个单词最终输出的词向量**。
 
 ![](../../pics/word2vec_hs.jpg)
 
 具体来说，这棵哈夫曼树除了根结点以外的所有非叶节点中都含有一个由参数θ确定的sigmoid函数，不同节点中的θ不一样。训练时隐藏层的向量与这个sigmoid函数进行运算，根据结果进行分类，若分类为负类则沿左子树向下传递，编码为0；若分类为正类则沿右子树向下传递，编码为1。
+
+> 可以参考此[文章](https://www.cnblogs.com/pinard/p/7243513.html)的具体流程
 
 负采样（Negative Sample）是另一种用来提高Word2Vec效率的方法，它是基于这样的观察：训练一个神经网络意味着使用一个训练样本就要稍微调整一下神经网络中所有的权重，这样才能够确保预测训练样本更加精确，如果能设计一种方法每次只更新一部分权重，那么计算复杂度将大大降低。
 
