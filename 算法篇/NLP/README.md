@@ -957,7 +957,7 @@ GPT整体对未标记数据来预训练，然后通过有标记数据来微调�
 
 ### 5.3 BERT
 
-BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation，在整体网络模式上和Open AI GPT类似，分为预训练和微调两个阶段。
+BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获取要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation，在整体网络模式上和Open AI GPT类似，分为预训练和微调两个阶段。
 
 BERT的整体网络结构由多层的Transformer Encoder组成，如下图所示，
 
@@ -967,10 +967,10 @@ BERT的整体网络结构由多层的Transformer Encoder组成，如下图所示
 
 **输入表示**
 
-BERT的输入的编码向量（长度是512）是3个嵌入特征的单位和，如图下图，这三个词嵌入特征是：
+BERT的输入的编码向量（长度是512）是3个嵌入特征的单位和，如下图，这三个词嵌入特征是：
 
 1. word piece嵌入（WordPiece Embedding），word piece是指将单词划分为一组有限的公共字词单元能在单词的有效性和字符的灵活性之间取得一个折中的平衡。例如图4的示例中‘playing’被拆分成了‘play’和‘ing’；（在中文应该是字粒度，没有这一说了）
-2. 位置嵌入（Position Embedding），位置嵌入是指将单词的位置信息编码成特征向量，位置嵌入是向模型中引入单词位置关系的至关重要的一环。
+2. 位置嵌入（Position Embedding），位置嵌入是指将单词的位置信息编码成特征向量，位置嵌入是模型中引入单词位置关系的至关重要的一环。
 3. 分割嵌入（Segment Embedding），用于区分两个句子，例如B是否是A的下文（对话场景，问答场景等）。对于句子对，第一个句子的特征值是0，第二个句子的特征值是1。
 
 ![](../../pics/bert_input_embedding.jpg)
@@ -997,7 +997,7 @@ BERT是一个多任务模型，它的任务是由两个自监督任务组成，�
 
 **Task 2: Next Sentence Prediction**
 
-Next Sentence Prediction（NSP）的任务是判断句子B是否是句子A的下文。如果是的话输出`IsNext`，否则输出`NotNext`。训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话是随机从预料中提取的，它们的关系是NotNext的。这个关系保存在图4中的`[CLS]`符号中。形如下，
+Next Sentence Prediction（NSP）的任务是判断句子B是否是句子A的下文。如果是的话输出`IsNext`，否则输出`NotNext`。训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话是随机从预料中提取的，它们的关系是NotNext的。这个关系保存在上图中的`[CLS]`符号中。形如下，
 
 ```
 Input = [CLS] the man went to [MASK] store [SEP]
@@ -1077,9 +1077,13 @@ BERT最后训练了两组参数的模型，BERT(base)（L=12, H=768, A=12, 整�
 
   - 在MLM中，随机mask一些token，默认词之间相互独立，这会损失一些信息，这个促使了XLNet的诞生。
 
-- 疑问
+- 倘若不加MLM的话，也就是每个单词进行预测，来构建深层双向模型，会存在什么问题？
 
-  倘若不加MLM的话，也就是每个单词进行预测，来构建深层双向模型，会存在什么问题？
+  过拟合
+  
+- 使用MLM的作用是啥？
+
+  个人总结：充分学习一个词汇的context信息（双向信息），倘若不做MLM的，模型非常容易记住预测目标词汇，造成过拟合现象，且非常难学习到词汇的context信息；另外就是这种MLM的设计机制可以使得网络结构比较大（15%的mask词汇中挑选80%作为预测，10%随机填充，10%真实词汇），给模型增加了一些负面信息，让模型更加充分学习周围词汇的相关信息。
 
 ### 5.4 GPT-2
 
