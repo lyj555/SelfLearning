@@ -6,7 +6,7 @@
 
 ### 1.1 句法分析（Lexical Analysis）
 
-句法分析是对自然语言词汇层面的分析，是NLP中最基础的工作，主要包括如下
+句法分析是对自然语言**词汇层面**的分析，是NLP中最基础的工作，主要包括如下
 
 - **分词（Word Segmentation/Tokenization）**
 
@@ -60,7 +60,7 @@
 
 ### 1.3 语义分析（Semantic Analysis）
 
-对给定文本进行分析和理解，形成能勾够表达语义的形式化表示或分布式表示
+对给定文本进行分析和理解，形成能够表达语义的形式化表示或分布式表示
 
 - 词义消歧（Word Sense Disambiguation）
 
@@ -118,7 +118,7 @@
 
   对文本的主观性情绪进行提取
 
-- 意图识别（Intent Detection）
+- **意图识别（Intent Detection）**
 
   对话系统中的一个重要模块，对用户给定的对话内容进行分析，识别用户意图
 
@@ -224,7 +224,55 @@ $$
 
 类似的平滑方法还有很多，如加法平滑、古德-图灵平滑和K平滑等等
 
-### 2.2 模型概述
+### 2.2 TF-IDF
+
+TF-IDF是两部分的组合，分别为TF和IDF。
+
+- TF
+
+  TF（Term Frequency）指词频，即一个词汇在一篇文章的频率，计算公式如下：
+  $$
+  TF = \frac{词在文章中的词数}{文章的总词数}
+  $$
+  对于一篇文章来说，往往TF越大的词汇重要性越高，但是对于一些停用词或者常见词汇来说，他们的TF可能很大，但是对于区分文章没有什么帮助，此时需要对词汇加入一个权重进行衡量，衡量一个词是不是常见词汇。**可以理解为如果一个词比较少见，但是在该文章中却多次出现，那么就反应这篇文章的特性。**
+
+- IDF
+
+  IDF（Inverse Document Frequency）指逆文档频率，计算公式如下：
+  $$
+  IDF = \log(\frac{语料库总文章数量}{包含该词的文章数 + 1})
+  $$
+  如果一个词汇越常见，那么IDF值就会越小。
+
+那么TF-IDF的计算公式则为TF-IDF=TF*IDF，从公式可以看出，**TF-IDF与一个词在文档中的出现次数成正比，与该词在整个语言中的出现次数成反比。**
+
+#### 2.2.1 用途
+
+- 提取文章的topN关键词
+
+  计算出文档的每个词的TF-IDF值，然后按降序排列，取Top N即可。
+
+- 信息检索
+
+  对于一组搜索词汇（"中国"、"蜜蜂"、"养殖"）来说，首先计算各自的TF-IDF值，然后相加作为该文档和这组搜索词汇的相似度，对于所有的文档均进行该操作，选取最高相似度的文档即可。
+
+#### 2.2.2 优缺点
+
+- 优点
+
+  TF-IDF算法的优点是简单快速，解释性强。
+
+- 缺点
+
+  - 重要词汇可能出现次数不多
+
+    单纯以"词频"衡量一个词的重要性，不够全面，有时重要的词可能出现次数并不多
+
+  - 忽略词汇的位置关系
+
+    这种算法无法体现词的位置信息，出现位置靠前的词与出现位置靠后的词，都被视为重要性相同，这是不正确的。（一种解决方法是，对全文的第一段和每一段的第一句话，给予较大的权重）
+
+### 2.3 模型概述
 
 [这篇文章](https://mp.weixin.qq.com/s?__biz=MzA4MTk3ODI2OA==&mid=2650344227&idx=1&sn=a40c9f90fb58d8a28713d01214f41f00&chksm=87811dd0b0f694c615a4ecad32dceb9cabf425d25f231a1e3df5295807e8d4e9d84730dd7fa7&mpshare=1&scene=1&srcid=&sharer_sharetime=1567043328434&sharer_shareid=e53fc678b87c854a7577418ee1c671ac&pass_ticket=6%2BFt82b20NkDrXw7JtruZMEmpKehLR8Y1SJBjeUyIHfZ%2FAO1GgK5sIACDx8vanDS#rd)提及了NLP的一些主流模型。
 
@@ -246,7 +294,7 @@ $$
 
   > 该[文章](https://zhuanlan.zhihu.com/p/28054589)大致罗列了RNN模型和seq2seq以及Attention机制
 
-  *Attention机制最早是在视觉图像领域提出来的，应该是在九几年思想就提出来了，但是真正火起来应该算是2014年google mind团队的这篇论文《Recurrent Models of Visual Attention》，他们在RNN模型上使用了attention机制来进行图像分类。随后，Bahdanau等人在论文《Neural Machine Translation by Jointly Learning to Align and Translate》中，使用类似attention的机制在机器翻译任务上将翻译和对齐同时进行，他们的工作算是第一个将attention机制应用到NLP领域中。接着attention机制被广泛应用在基于RNN/CNN等神经网络模型的各种NLP任务中。2017年，google机器翻译团队发表的《Attention is all you need》中大量使用了自注意力（self-attention）机制来学习文本表示。自注意力机制也成为了大家近期的研究热点，并在各种NLP任务上进行探索。下图维attention研究进展的大概趋势。*
+  *Attention机制最早是在视觉图像领域提出来的，应该是在九几年思想就提出来了，但是真正火起来应该算是2014年google mind团队的这篇论文《Recurrent Models of Visual Attention》，他们在RNN模型上使用了attention机制来进行图像分类。随后，Bahdanau等人在论文《Neural Machine Translation by Jointly Learning to Align and Translate》中，使用类似attention的机制在机器翻译任务上将翻译和对齐同时进行，他们的工作算是第一个将attention机制应用到NLP领域中。接着attention机制被广泛应用在基于RNN/CNN等神经网络模型的各种NLP任务中。2017年，google机器翻译团队发表的《Attention is all you need》中大量使用了自注意力（self-attention）机制来学习文本表示。自注意力机制也成为了大家近期的研究热点，并在各种NLP任务上进行探索。*
 
 - Contextual Word Embedding
 
@@ -271,7 +319,7 @@ $$
 
 ### 3.1 Word2ec
 
-NLP 里的词语，是人类的抽象总结，是符号形式的（比如中文、英文、拉丁文等等），所以需要把他们转换成数值形式，或者说——嵌入到一个数学空间里，这种嵌入方式，就叫词嵌入（word embedding)，而 word2vec，就是词嵌入（ word embedding) 的一种。
+NLP 里的词语，是人类的抽象总结，是符号形式的（比如中文、英文、拉丁文等等），所以需要把他们转换成数值形式，或者说——嵌入到一个数学空间里，这种嵌入方式，就叫词嵌入（word embedding)，而 word2vec，就是词嵌入（word embedding）的一种。
 
 在word2vec中，有两个训练的模型，分别为CBOW(Continuous Bag-Of-Words)和SG(Skig-Gram)模型，还有关于模型的训练技巧，主要包括HS(hierarchical softmax)和NS(negative sampling)。
 
@@ -320,12 +368,14 @@ Skip-Gram和CBOW正好相反，为给定一个词，通过这个词来预测它�
 
 对于Hierarchical Softmax，其改进主要有两点，
 
-- 从输入层到隐藏层的映射，没有采用原先的与矩阵W相乘然后相加求平均的方法，而是直接对所有输入的词向量求和。假设输入的词向量为（0，1，0，0）和（0,0,0,1），那么隐藏层的向量为（0,1,0,1）。
+- 从输入层到隐藏层的映射，没有采用原先的与矩阵W相乘然后相加求平均的方法，而是直接对所有输入的词向量求和。假设输入的词向量为(0,1,0,0)和（0,0,0,1），那么隐藏层的向量为（0,1,0,1）。
 - 第二点改进是采用哈夫曼树来替换了原先的从隐藏层到输出层的矩阵$W^{\prime}$ 。哈夫曼树的叶节点个数为词汇表的单词个数$V$，一个叶节点代表一个单词，**而从根节点到该叶节点的路径确定了这个单词最终输出的词向量**。
 
 ![](../../pics/word2vec_hs.jpg)
 
 具体来说，这棵哈夫曼树除了根结点以外的所有非叶节点中都含有一个由参数θ确定的sigmoid函数，不同节点中的θ不一样。训练时隐藏层的向量与这个sigmoid函数进行运算，根据结果进行分类，若分类为负类则沿左子树向下传递，编码为0；若分类为正类则沿右子树向下传递，编码为1。
+
+> 可以参考此[文章](https://www.cnblogs.com/pinard/p/7243513.html)的具体流程
 
 负采样（Negative Sample）是另一种用来提高Word2Vec效率的方法，它是基于这样的观察：训练一个神经网络意味着使用一个训练样本就要稍微调整一下神经网络中所有的权重，这样才能够确保预测训练样本更加精确，如果能设计一种方法每次只更新一部分权重，那么计算复杂度将大大降低。
 
@@ -383,12 +433,16 @@ word2vec把语料库中的每个单词当成原子的，它会为每个单词生
 
 仔细观察模型的后半部分，即从隐含层输出到输出层输出，会发现它就是一个softmax线性多类别分类器，分类器的输入是一个用来表征当前文档的向量；模型的前半部分，即从输入层输入到隐含层输出部分，主要在做一件事情：生成用来表征文档的向量。那么它是如何做的呢？叠加构成这篇文档的所有词及n-gram的词向量，然后取平均。叠加词向量背后的思想就是传统的词袋法，即将文档看成一个由词构成的集合。
 
-于是fastText的核心思想就是：**将整篇文档的词及n-gram向量叠加平均得到文档向量，然后使用文档向量做softmax多分类**。这中间涉及到两个技巧：字符级n-gram特征的引入以及分层Softmax分类。
+于是fastText的核心思想就是：**将整篇文档的词及n-gram向量叠加平均得到一个向量，用此向量来表示文档，然后用文档向量做softmax多分类**。这中间涉及到两个技巧：字符级n-gram特征的引入以及分层Softmax分类。
 
 
-### 3.3 glove
+### 3.3 Glove
 
+在Glove(Global Vectors for Word Representation)提出前，学习词向量表示的方法主要有两种类型：一种是基于全局矩阵分解的方法，如LSA，另一种是局部上下文窗口的方法，上面的word2vec(CBOW和skip-gram)。但是这两种方法都有各自的缺陷，其中，LSA虽然有效利用了统计信息，但是在词汇类比方面却很差，而word2vec虽然可以很好地进行词汇类比，但是因为这两种方法是基于一个个局部的上下文窗口方法，因此，没有有效地利用全局的词汇共现统计信息。
 
+为了克服全局矩阵分解和局部上下文窗口的缺陷，在2014年，Jeffrey Pennington等人提出了一种新的GloVe方法，**该方法基于全局词汇共现的统计信息来学习词向量**，从而将统计信息与局部上下文窗口方法的优点都结合起来，并发现其效果确实得到了提升。
+
+> 详细的推导过程，参考[文章](https://blog.csdn.net/linchuhai/article/details/97135612)
 
 ## 4. Seq2seq的改进
 
@@ -511,7 +565,7 @@ $$
 
 > Attention另外一种解释，也可以将Attention机制看作一种软寻址（Soft Addressing）:Source可以看作存储器内存储的内容，元素由地址Key和值Value组成，当前有个Key=Query的查询，目的是取出存储器中对应的Value值，即Attention数值。通过Query和存储器内元素Key的地址进行相似性比较来寻址，之所以说是软寻址，指的不像一般寻址只从存储内容里面找出一条内容，而是可能从每个Key地址都会取出内容，取出内容的重要性根据Query和Key的相似性来决定，之后对Value进行加权求和，这样就可以取出最终的Value值，也即Attention值。
 
-**attention的计算过程**
+#### 4.1.4 Attention计算过程
 
 可以将其计算过程大致抽象为三个过程，如下图，
 
@@ -527,7 +581,7 @@ $$
 
   对第一阶段得出的值进行归一化，往往采用Softmax方式，
   $$
-  a_i = Softmax(Sim_i)=\frac{e^{Sim_i}}{\sum_{j=1}^{L_x}e^{Sim_j}}
+  a_i = softmax(Sim_i)=\frac{e^{Sim_i}}{\sum_{j=1}^{L_x}e^{Sim_j}}
   $$
 
 - 第三阶段（根据权重系数对Value进行加权求和）
@@ -539,7 +593,7 @@ $$
 
 > 未加入attention机制的encoder-docoder，如果中间语义编码C可以任意长，也可以达到attention的效果，但是其长度往往有限，attention机制可以看作是一种折中的方式。
 
-#### 4.1.4 Attention机制的Q&A
+#### 4.1.5 Attention机制的Q&A
 
 - 为什么要引入Attention机制？
 
@@ -555,9 +609,11 @@ $$
 
   **可以借助人脑处理信息过载的方式，例如Attention机制可以提高神经网络处理信息的能力。**
 
+  > 我觉得可以说简单点，一个是把重点放在更需要关注的信息上，提高准确率（RNN为结构的encoder-decoder如果只用一个中间状态C，显然会损失很多信息，降低模型的准确率）；再一个是这种注意力机制符合人类分析一些问题的方式，更具有解释性；相比于设计复杂的网络（耗时，耗资源），这样简单的设计有可能会达到相似甚至更好的效果
+
 - Attention机制有哪些？（怎么分类？）
 
-  当用神经网络来处理大量的输入信息时，也可以借鉴人脑的注意力机制，只 选择一些关键的信息输入进行处理，来提高神经网络的效率。按照认知神经学中的注意力，可以总体上分为两类：
+  当用神经网络来处理大量的输入信息时，也可以借鉴人脑的注意力机制，只选择一些关键的信息输入进行处理，来提高神经网络的效率。按照认知神经学中的注意力，可以总体上分为两类：
 
   - **聚焦式（focus）注意力**
 
@@ -699,6 +755,22 @@ Transformer可以捕获文本的长期以来，但是却局限于文本的固定
     对此问题，论文提出了一种新的位置编码方式。这种位置编码是每个注意力模块的一部分。它不会仅在第一层之前编码位置，而且会基于表征之间的相对距离而非绝对位置进行编码。
 
     > 具体如何做没有细究
+  
+#### 4.3.3 疑问
+
+  1. 对于transformer，如果一个样本的长度是1000，设定的max_len是512，那么剩下的文本信息怎么办？
+
+     如果序列长度超过固定长度，处理起来就比较麻烦。一种处理方式，就是将文本划分为多个segments。训练的时候，对每个segment单独处理，segments之间没有联系，如下图(a)所示。这存在两个问题，1）因为segments之间独立训练，**所以不同的token之间，最长的依赖关系，就取决于segment的长度**；2）出于效率的考虑，在划分segments的时候，不考虑句子的自然边界，而是根据固定的长度来划分序列，导致分割出来的segments在语义上是不完整的。
+
+  2. 对于划分的多个文本片段，是构建为了多个训练样本（标签一致）or一个样本，多个片段分别分别训练？
+
+  3. 截取的每个片段，相当于是transformer的标准流程么？
+
+3. 预测阶段，transfomrer的流程？
+
+   在预测的时候，会对固定长度的segment做计算，一般取最后一个位置的隐向量作为输出。为了充分利用上下文关系，在每做完一次预测之后，就对整个序列向右移动一个位置，再做一次计算，如图1(b)所示，这导致计算效率非常低。（问题是每个片断的都会有一个输出，应该怎么办？）
+
+4. 预测阶段，transformer-xl的流程？和训练阶段异同？
 
 
 ## 5. Contextual Word Embedding
@@ -746,7 +818,7 @@ R_k &= \{x_k, \overrightarrow{h}_{k,j}, \overleftarrow{h}_{k,j} |j=1,\ldots,L\} 
 $$
 其中$h_{k,0}$表示token层，$h_{k,j}=[\overrightarrow{h}_{k,j};\overleftarrow{h}_{k,j}]$
 
-在上面的词向量中，每个token$t_k$的词向量仍然包括$L+1$个，需要将这些向量变为只有一个才更容易加入下游的任务，在一些简单的例子中，仅仅去了顶层的词向量表示即$h_{k,L}$，通常来说，可以根据任务为每一层词向量得到一个权重，
+在上面的词向量中，每个token$t_k$的词向量仍然包括$L+1$个（前向和后向的合并），需要将这些向量变为只有一个才更容易加入下游的任务，在一些简单的例子中，仅仅使用了顶层的词向量表示即$h_{k,L}$，通常来说，可以根据任务为每一层词向量得到一个权重，
 $$
 ELMo_k^{task} = E(R_k;\Theta^{task})=\gamma^{task}\sum_{j=1}^L s_j^{task}h_{k,j}
 $$
@@ -762,6 +834,14 @@ $$
 
 因为Elmo给下游提供的是每个单词的特征形式，所以这一类预训练的方法被称为***feature-based***方式，像后面提及的GPT和BERT模型都属于***fine-tuning***方式。
 
+> - feature-based
+>
+>   相当于模型固定了，输入不同的句子，得到每个词的词向量表示（相同的词在不同的句子中词向量显然不同）
+>
+> - fine-tuning
+>
+>   相当于模型大致固定，需要根据任务微调。
+
 #### 5.1.4 总结
 
 作者论文中$L=2$，词向量维度为512，作者通过实验表名在双向语言模型中，越高层表示对词义消歧做的越好（表明越高层越能捕获词意信息），而低层更能学习到词的句法信息和词性信息。总体而言，biLM每层学到的东西是不一样的，所以将他们叠加起来，对任务有较好的的提升。
@@ -771,7 +851,12 @@ $$
   - 可以学习到词的复杂特征，包括词义词性等特征（底层和高层）
 - 缺点
   - ELMO 采取双向拼接这种融合特征的能力，相比较于整体整合来说，这样会损失掉一些信息
+  
+    相当于虽然一个词的周围信息考虑了，但是是在两种不同的训练模式下考量的，不是在一个整体考虑的，这样势必会损失部分信息。
+  
   - 在中间模型选择上，使用LSTM模型，在捕获长依赖上存在缺陷，换位Transformer这种结构可能会更好一些。
+  
+  - L层的双向LSTM，速度上偏慢，无法并行。
 
 ### 5.2 OpenAI GPT
 
@@ -872,7 +957,7 @@ GPT整体对未标记数据来预训练，然后通过有标记数据来微调�
 
 ### 5.3 BERT
 
-BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation，在整体网络模式上和Open AI GPT类似，分为预训练和微调两个阶段。
+BERT的全称是Bidirectional Encoder Representation from Transformers，即双向Transformer的Encoder，因为decoder是不能获取要预测的信息。模型的主要创新点都在pre-train方法上，即用了Masked LM和Next Sentence Prediction，两种方法分别捕捉词语和句子级别的representation，在整体网络模式上和Open AI GPT类似，分为预训练和微调两个阶段。
 
 BERT的整体网络结构由多层的Transformer Encoder组成，如下图所示，
 
@@ -882,10 +967,10 @@ BERT的整体网络结构由多层的Transformer Encoder组成，如下图所示
 
 **输入表示**
 
-BERT的输入的编码向量（长度是512）是3个嵌入特征的单位和，如图下图，这三个词嵌入特征是：
+BERT的输入的编码向量（长度是512）是3个嵌入特征的单位和，如下图，这三个词嵌入特征是：
 
 1. word piece嵌入（WordPiece Embedding），word piece是指将单词划分为一组有限的公共字词单元能在单词的有效性和字符的灵活性之间取得一个折中的平衡。例如图4的示例中‘playing’被拆分成了‘play’和‘ing’；（在中文应该是字粒度，没有这一说了）
-2. 位置嵌入（Position Embedding），位置嵌入是指将单词的位置信息编码成特征向量，位置嵌入是向模型中引入单词位置关系的至关重要的一环。
+2. 位置嵌入（Position Embedding），位置嵌入是指将单词的位置信息编码成特征向量，位置嵌入是模型中引入单词位置关系的至关重要的一环。
 3. 分割嵌入（Segment Embedding），用于区分两个句子，例如B是否是A的下文（对话场景，问答场景等）。对于句子对，第一个句子的特征值是0，第二个句子的特征值是1。
 
 ![](../../pics/bert_input_embedding.jpg)
@@ -912,7 +997,7 @@ BERT是一个多任务模型，它的任务是由两个自监督任务组成，�
 
 **Task 2: Next Sentence Prediction**
 
-Next Sentence Prediction（NSP）的任务是判断句子B是否是句子A的下文。如果是的话输出`IsNext`，否则输出`NotNext`。训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话是随机从预料中提取的，它们的关系是NotNext的。这个关系保存在图4中的`[CLS]`符号中。形如下，
+Next Sentence Prediction（NSP）的任务是判断句子B是否是句子A的下文。如果是的话输出`IsNext`，否则输出`NotNext`。训练数据的生成方式是从平行语料中随机抽取的连续两句话，其中50%保留抽取的两句话，它们符合IsNext关系，另外50%的第二句话是随机从预料中提取的，它们的关系是NotNext的。这个关系保存在上图中的`[CLS]`符号中。形如下，
 
 ```
 Input = [CLS] the man went to [MASK] store [SEP]
@@ -991,10 +1076,21 @@ BERT最后训练了两组参数的模型，BERT(base)（L=12, H=768, A=12, 整�
 - 缺点
 
   - 在MLM中，随机mask一些token，默认词之间相互独立，这会损失一些信息，这个促使了XLNet的诞生。
+- 预训练阶段因为采取引入[Mask]标记来Mask掉部分单词的训练模式，而微调阶段是看不到这种被强行加入的Mask标记的，所以两个阶段存在使用模式不一致的情形，这可能会带来一定的性能损失
 
-- 疑问
+#### 5.3.5 Q&A
 
-  倘若不加MLM的话，也就是每个单词进行预测，来构建深层双向模型，会存在什么问题？
+- 倘若不加MLM的话，也就是每个单词进行预测，来构建深层双向模型，会存在什么问题？
+
+  过拟合
+  
+- 使用MLM的作用是啥？
+
+  个人总结：充分学习一个词汇的context信息（双向信息），倘若不做MLM的，模型非常容易记住预测目标词汇，造成过拟合现象，且非常难学习到词汇的context信息；另外就是这种MLM的设计机制可以使得网络结构比较大（15%的mask词汇中挑选80%作为预测，10%随机填充，10%真实词汇），给模型增加了一些负面信息，让模型更加充分学习周围词汇的相关信息。
+
+- 简单介绍BERT模型？
+
+  首先BERT（Bidirectional Encoder From Transformer）是基于Transformer的双向编码的语言模型。整体模式是预训练和微调。在预训练阶段创新性的采用了MaskedLM（学习预测词的上下文语义）和NSP（句子级别信息），且网络结构也是比较深（base的模型就12个transformer blcok，big的模型是24层），真正意义的语言模型中的深度模型。
 
 ### 5.4 GPT-2
 
@@ -1093,7 +1189,7 @@ XLNet引入了自回归语言模型（Auto-Regressive）以及自编码语言模
 
   自编码，将输入复制到输出。BERT的MLM就是自编码语言模型的一种。自回归语言模型只能根据上文预测下一个单词，或者反过来，只能根据下文预测前面一个单词。相比而言，Bert通过在输入X中随机Mask掉一部分单词，然后预训练过程的主要任务之一是根据上下文单词来预测这些被Mask掉的单词，如果你对Denoising Autoencoder比较熟悉的话，会看出，这确实是典型的DAE的思路。那些被Mask掉的单词就是在输入侧加入的所谓噪音。类似Bert这种预训练模式，被称为DAE LM。
 
-  这种DAE LM的优缺点正好和自回归LM反过来，它能比较自然地融入双向语言模型，同时看到被预测单词的上文和下文，这是好处。缺点是啥呢？主要在输入侧引入[Mask]标记，导致预训练阶段和Fine-tuning阶段不一致的问题，因为Fine-tuning阶段是看不到[Mask]标记的。DAE吗，就要引入噪音，[Mask] 标记就是引入噪音的手段，这个正常。
+  这种DAE LM的优缺点正好和自回归LM反过来，它能**比较自然地融入双向语言模型**，同时看到被预测单词的上文和下文，这是好处。缺点是啥呢？主要在输入侧引入[Mask]标记，**导致预训练阶段和微调阶段不一致的问题**，因为微调阶段是看不到[Mask]标记的。DAE吗，就要引入噪音，[Mask] 标记就是引入噪音的手段，这个正常。
 
 接下来主要讨论XLNet主要的改进。
 
@@ -1103,7 +1199,7 @@ XLNet引入了自回归语言模型（Auto-Regressive）以及自编码语言模
 
 Bert的自编码语言模型也有对应的缺点，就是XLNet在文中指出的两个，
 
-- 预训练阶段因为采取引入[Mask]标记来Mask掉部分单词的训练模式，而Fine-tuning阶段是看不到这种被强行加入的Mask标记的，所以两个阶段存在使用模式不一致的情形，这可能会带来一定的性能损失
+- 预训练阶段因为采取引入[Mask]标记来Mask掉部分单词的训练模式，而微调阶段是看不到这种被强行加入的Mask标记的，所以两个阶段存在使用模式不一致的情形，这可能会带来一定的性能损失
 - Bert在第一个预训练阶段，假设句子中多个单词被Mask掉，这些被Mask掉的单词之间没有任何关系，是条件独立的，而有时候这些单词之间是有关系的，XLNet则考虑了这种关系。
 
 XLnet则是想在去掉上面提到的条件独立的假设下，充分利用双向文本信息。XLNet提取了Permutation Language Modeling这种机制进行建模，如下图所示，这也是本文最大的创新点。
@@ -1132,11 +1228,13 @@ XLNet是想通过自回归的方式来进行语言建模，但是希望利用到
 
    其主要用来代替Bert的那个[Mask]标记的，因为XLNet希望抛掉[Mask]标记符号，但是比如知道上文单词x1,x2，要预测单词x3，此时在x3对应位置的Transformer最高层去预测这个单词，但是输入侧不能看到要预测的单词x3，Bert其实是直接引入[Mask]标记来覆盖掉单词x3的内容的，等于说[Mask]是个通用的占位符号。而XLNet因为要抛掉[Mask]标记，但是又不能看到x3的输入，于是Query流，就直接忽略掉x3输入了，只保留这个位置信息，用参数w来代表位置的embedding编码。其实XLNet只是扔了表面的[Mask]占位符号，内部还是引入Query流来忽略掉被Mask的这个单词。和Bert比，只是实现方式不同而已。
 
->    预训练阶段最终预测只使用query stream，因为content stream已经见过当前token了。在fine-tune阶段使用content stream，又回到了传统的self-attention结构。
+>    **预训练阶段最终预测只使用query stream，因为content stream已经见过当前token了。在fine-tune阶段使用content stream，又回到了传统的self-attention结构。**
 >
 >    因为不像MLM只用预测部分token，还需要计算permutation，XLNet的计算量更大了，因此作者提出了partial prediction进行简化，即只预测后面1/K个token。
 
 ![](../../pics/xlnet_two_stream.jpg)
+
+> 上面的矩阵（Query stream attention）中，第一行表示x1可以看到x2,x3,x4，不可以看到自身，即x1，这和上面提到的一致（在预测阶段使用Query steam attention，不能看见预测目标（自身））。同理，第二三四行分别表示x2、x3和x4可以看到的信息。
 
 ##### 5.5.3.2  Incorporating Ideas from Transformer-XL
 
@@ -1148,19 +1246,17 @@ XLNet是想通过自回归的方式来进行语言建模，但是希望利用到
 
 ##### 5.5.3.3 Modeling Multiple Segments
 
-许多的下游任务往往会有许多输入片段，这部分作者则是想对这些输入片段进行建模。
-
 BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XLNet起始也采用了类似的思路，但是发现提升不明显，而后借鉴了Transformer-XL，采用了相对位置编码（Relative Segment Encodings）这种方式，BERT中使用的绝对位置编码。
 
 **相对位置编码的核心思想是仅考虑两个位置是否在同一个片段中，而不是他们属于哪一个片段。**
 
 #### 5.5.4 Comparison with BERT
 
-同BERT进行比较来看，两者仍然沿用了两阶段（预训练+fine tune）的语言模型，而其不同之处则是上面提出的XLNet三个创新点（PLM/借鉴Transformer-XL处理长文本/对多片段建模）。
+同BERT进行比较来看，两者仍然沿用了两阶段（预训练+微调）的语言模型，而其不同之处则是上面提出的XLNet三个创新点（PLM/借鉴Transformer-XL处理长文本/对多片段建模）。
 
 接下来着重拿PLM(Permutation Language Model)和BERT比较一下，PLM是XLNet的核心创新点，下面的比较主要参考了张俊林老师的[XLNet:运行机制及和Bert的异同比较](https://zhuanlan.zhihu.com/p/70257427)。
 
-- BERT预训练里带有[Mask]标记导致的和fine-tuning过程不一致的问题
+- BERT预训练里带有[Mask]标记导致的和微调过程不一致的问题
 
   尽管看上去，XLNet在预训练机制引入的Permutation Language Model这种新的预训练目标，和BERT采用Mask标记这种方式，有很大不同。其实深入思考一下，会发现，两者本质是类似的。区别主要在于：BERT 是直接在输入端显示地通过引入Mask标记，在输入侧隐藏掉一部分单词，让这些单词在预测的时候不发挥作用，要求利用上下文中其它单词去预测某个被Mask掉的单词；而XLNet则抛弃掉输入侧的Mask标记，通过Attention Mask机制，在Transformer内部随机Mask掉一部分单词（这个被Mask掉的单词比例跟当前单词在句子中的位置有关系，位置越靠前，被Mask掉的比例越高，位置越靠后，被Mask掉的比例越低），让这些被Mask掉的单词在预测某个单词的时候不发生作用。所以，本质上两者并没什么太大的不同，只是Mask的位置，Bert更表面化一些，XLNet则把这个过程隐藏在了Transformer内部而已， 这样，就可以抛掉表面的[Mask]标记。
 
@@ -1188,7 +1284,7 @@ BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XL
 
 1. PLM(Permutation Language Model)
 
-   采用这种方式主要是为了在自回归的模式下，来融入双向语言信息，BERT中采用的MLM(maked language model)，这种方式存在两个问题，一个是默认假设了token间是相互独立，在学习时也会损失一些token依赖信息；另外一个则是会导致预训练阶段和fine tune阶段模式不一致。
+   采用这种方式主要是为了在自回归的模式下，来融入双向语言信息，BERT中采用的MLM(masked language model)，这种方式存在两个问题，一个是默认假设了token间是相互独立，在学习时也会损失一些token依赖信息；另外一个则是会导致预训练阶段和fine tune阶段模式不一致。
 
 2. 引入Tranformer-XL的思路
 
@@ -1197,6 +1293,12 @@ BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XL
 3. 增加了预训练阶段使用的数据规模以及质量
 
    这部分思路感觉是借鉴了GPT2的想法，大数据量+高质量的数据可以极大提升预训练的效果。
+
+#### 5.5.6 Q&A
+
+- 介绍一下XLNet模型
+
+  XLNet（Generalized Autoregressive Pretraining for Language Understanding）整体采用的模式是预训练+微调的模式，预训练阶段采用了自回归（auto-regressive）的思想，其核心创新点通过引入了PLM(Permutation Language Model)的机制融入了双向语言信息，引入了transformer-xl的思想来处理长文本，采用相对位置编码对多片段进行编码。
 
 ## 6. NLP任务模型
 

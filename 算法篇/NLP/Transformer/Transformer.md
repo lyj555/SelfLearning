@@ -64,7 +64,7 @@
 
 - 第三步和第四步（放缩和softmax）
 
-  对该得分进行规范，除以8。这个在论文中的解释是为了使得梯度更稳定。之后对得分[14，12]做softmax得到比例 [0.88，0.12]。
+  对该得分进行规范，除以8。**这个在论文中的解释是为了使得梯度更稳定**。之后对得分[14，12]做softmax得到比例 [0.88，0.12]。
 
   ![](../../../pics/scale_pos_production_third_forth.webp)
 
@@ -184,8 +184,6 @@ $$
 
 ## 4. 总结
 
-
-
 - 优点
   
   - **算法设计**
@@ -211,11 +209,11 @@ $$
 
 - BERT（双向二阶段训练模型）
 
-  BERT(Bidirectional Encoder Representation from Transformer)，是Google Brain在2018年提出的基于Transformer的自然语言表示框架。是一提出就大火的明星模型。BERT与GPT一样，采取了Pre-training + Fine-tuning的训练方式，在分类、标注等任务下都获得了更好的效果。**采用双向的Transfoer模型**。
+  BERT(Bidirectional Encoder Representation from Transformer)，是Google Brain在2018年提出的基于Transformer的自然语言表示框架。是一提出就大火的明星模型。BERT与GPT一样，采取了Pre-training + Fine-tuning的训练方式，在分类、标注等任务下都获得了更好的效果。**采用双向的Transformer模型**。
 
 - MT-DNN（多任务模型）
 
-  MT-DNN (Multi-Task Deep Neural Networks) 依然采用了BERT的二阶段训练方法以及双向Transformer。在Pre-Training阶段，MT-DNN与BERT几乎完全一样，但是在Fine-Tuning阶段，MT-DNN采用了多任务的微调方式。**同时**采用Transformer输出的上下文Embedding进行单句分类、文本对相似度、文本对分类以及问答等任务的训练。整个结构如下图所示：
+  MT-DNN (Multi-Task Deep Neural Networks) 依然采用了BERT的二阶段训练方法以及双向Transformer。在Pre-Training阶段，MT-DNN与BERT几乎完全一样，但是在Fine-Tuning阶段，MT-DNN采用了多任务的微调方式。同时采用Transformer输出的上下文Embedding进行单句分类、文本对相似度、文本对分类以及问答等任务的训练。整个结构如下图所示：
 
   ![](../../../pics/MT_DNN.jpg)
 

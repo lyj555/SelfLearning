@@ -22,7 +22,7 @@
 
 - Boosting
 
-  学习器之间存在依赖关系，必须串行生成的序列化方法，相当于每个基学习器依赖上一个基学习器的学习，代表的算法是Adaboost和GradientBoosting
+  学习器之间存在依赖关系，必须串行生成的序列化方法，相当于每个基学习器依赖上一个基学习器的学习，代表的算法是Adaboost和Gradient Boosting Tree
 
 下面主要回顾随机森林（Random Forest）和梯度提升树（Gradient Boosting Tree）两种算法。
 
