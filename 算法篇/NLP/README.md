@@ -1076,6 +1076,9 @@ BERT最后训练了两组参数的模型，BERT(base)（L=12, H=768, A=12, 整�
 - 缺点
 
   - 在MLM中，随机mask一些token，默认词之间相互独立，这会损失一些信息，这个促使了XLNet的诞生。
+- 预训练阶段因为采取引入[Mask]标记来Mask掉部分单词的训练模式，而微调阶段是看不到这种被强行加入的Mask标记的，所以两个阶段存在使用模式不一致的情形，这可能会带来一定的性能损失
+
+#### 5.3.5 Q&A
 
 - 倘若不加MLM的话，也就是每个单词进行预测，来构建深层双向模型，会存在什么问题？
 
@@ -1084,6 +1087,10 @@ BERT最后训练了两组参数的模型，BERT(base)（L=12, H=768, A=12, 整�
 - 使用MLM的作用是啥？
 
   个人总结：充分学习一个词汇的context信息（双向信息），倘若不做MLM的，模型非常容易记住预测目标词汇，造成过拟合现象，且非常难学习到词汇的context信息；另外就是这种MLM的设计机制可以使得网络结构比较大（15%的mask词汇中挑选80%作为预测，10%随机填充，10%真实词汇），给模型增加了一些负面信息，让模型更加充分学习周围词汇的相关信息。
+
+- 简单介绍BERT模型？
+
+  首先BERT（Bidirectional Encoder From Transformer）是基于Transformer的双向编码的语言模型。整体模式是预训练和微调。在预训练阶段创新性的采用了MaskedLM（学习预测词的上下文语义）和NSP（句子级别信息），且网络结构也是比较深（base的模型就12个transformer blcok，big的模型是24层），真正意义的语言模型中的深度模型。
 
 ### 5.4 GPT-2
 
@@ -1182,7 +1189,7 @@ XLNet引入了自回归语言模型（Auto-Regressive）以及自编码语言模
 
   自编码，将输入复制到输出。BERT的MLM就是自编码语言模型的一种。自回归语言模型只能根据上文预测下一个单词，或者反过来，只能根据下文预测前面一个单词。相比而言，Bert通过在输入X中随机Mask掉一部分单词，然后预训练过程的主要任务之一是根据上下文单词来预测这些被Mask掉的单词，如果你对Denoising Autoencoder比较熟悉的话，会看出，这确实是典型的DAE的思路。那些被Mask掉的单词就是在输入侧加入的所谓噪音。类似Bert这种预训练模式，被称为DAE LM。
 
-  这种DAE LM的优缺点正好和自回归LM反过来，它能比较自然地融入双向语言模型，同时看到被预测单词的上文和下文，这是好处。缺点是啥呢？主要在输入侧引入[Mask]标记，导致预训练阶段和Fine-tuning阶段不一致的问题，因为Fine-tuning阶段是看不到[Mask]标记的。DAE吗，就要引入噪音，[Mask] 标记就是引入噪音的手段，这个正常。
+  这种DAE LM的优缺点正好和自回归LM反过来，它能**比较自然地融入双向语言模型**，同时看到被预测单词的上文和下文，这是好处。缺点是啥呢？主要在输入侧引入[Mask]标记，**导致预训练阶段和微调阶段不一致的问题**，因为微调阶段是看不到[Mask]标记的。DAE吗，就要引入噪音，[Mask] 标记就是引入噪音的手段，这个正常。
 
 接下来主要讨论XLNet主要的改进。
 
@@ -1192,7 +1199,7 @@ XLNet引入了自回归语言模型（Auto-Regressive）以及自编码语言模
 
 Bert的自编码语言模型也有对应的缺点，就是XLNet在文中指出的两个，
 
-- 预训练阶段因为采取引入[Mask]标记来Mask掉部分单词的训练模式，而Fine-tuning阶段是看不到这种被强行加入的Mask标记的，所以两个阶段存在使用模式不一致的情形，这可能会带来一定的性能损失
+- 预训练阶段因为采取引入[Mask]标记来Mask掉部分单词的训练模式，而微调阶段是看不到这种被强行加入的Mask标记的，所以两个阶段存在使用模式不一致的情形，这可能会带来一定的性能损失
 - Bert在第一个预训练阶段，假设句子中多个单词被Mask掉，这些被Mask掉的单词之间没有任何关系，是条件独立的，而有时候这些单词之间是有关系的，XLNet则考虑了这种关系。
 
 XLnet则是想在去掉上面提到的条件独立的假设下，充分利用双向文本信息。XLNet提取了Permutation Language Modeling这种机制进行建模，如下图所示，这也是本文最大的创新点。
@@ -1221,11 +1228,13 @@ XLNet是想通过自回归的方式来进行语言建模，但是希望利用到
 
    其主要用来代替Bert的那个[Mask]标记的，因为XLNet希望抛掉[Mask]标记符号，但是比如知道上文单词x1,x2，要预测单词x3，此时在x3对应位置的Transformer最高层去预测这个单词，但是输入侧不能看到要预测的单词x3，Bert其实是直接引入[Mask]标记来覆盖掉单词x3的内容的，等于说[Mask]是个通用的占位符号。而XLNet因为要抛掉[Mask]标记，但是又不能看到x3的输入，于是Query流，就直接忽略掉x3输入了，只保留这个位置信息，用参数w来代表位置的embedding编码。其实XLNet只是扔了表面的[Mask]占位符号，内部还是引入Query流来忽略掉被Mask的这个单词。和Bert比，只是实现方式不同而已。
 
->    预训练阶段最终预测只使用query stream，因为content stream已经见过当前token了。在fine-tune阶段使用content stream，又回到了传统的self-attention结构。
+>    **预训练阶段最终预测只使用query stream，因为content stream已经见过当前token了。在fine-tune阶段使用content stream，又回到了传统的self-attention结构。**
 >
 >    因为不像MLM只用预测部分token，还需要计算permutation，XLNet的计算量更大了，因此作者提出了partial prediction进行简化，即只预测后面1/K个token。
 
 ![](../../pics/xlnet_two_stream.jpg)
+
+> 上面的矩阵（Query stream attention）中，第一行表示x1可以看到x2,x3,x4，不可以看到自身，即x1，这和上面提到的一致（在预测阶段使用Query steam attention，不能看见预测目标（自身））。同理，第二三四行分别表示x2、x3和x4可以看到的信息。
 
 ##### 5.5.3.2  Incorporating Ideas from Transformer-XL
 
@@ -1237,19 +1246,17 @@ XLNet是想通过自回归的方式来进行语言建模，但是希望利用到
 
 ##### 5.5.3.3 Modeling Multiple Segments
 
-许多的下游任务往往会有许多输入片段，这部分作者则是想对这些输入片段进行建模。
-
 BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XLNet起始也采用了类似的思路，但是发现提升不明显，而后借鉴了Transformer-XL，采用了相对位置编码（Relative Segment Encodings）这种方式，BERT中使用的绝对位置编码。
 
 **相对位置编码的核心思想是仅考虑两个位置是否在同一个片段中，而不是他们属于哪一个片段。**
 
 #### 5.5.4 Comparison with BERT
 
-同BERT进行比较来看，两者仍然沿用了两阶段（预训练+fine tune）的语言模型，而其不同之处则是上面提出的XLNet三个创新点（PLM/借鉴Transformer-XL处理长文本/对多片段建模）。
+同BERT进行比较来看，两者仍然沿用了两阶段（预训练+微调）的语言模型，而其不同之处则是上面提出的XLNet三个创新点（PLM/借鉴Transformer-XL处理长文本/对多片段建模）。
 
 接下来着重拿PLM(Permutation Language Model)和BERT比较一下，PLM是XLNet的核心创新点，下面的比较主要参考了张俊林老师的[XLNet:运行机制及和Bert的异同比较](https://zhuanlan.zhihu.com/p/70257427)。
 
-- BERT预训练里带有[Mask]标记导致的和fine-tuning过程不一致的问题
+- BERT预训练里带有[Mask]标记导致的和微调过程不一致的问题
 
   尽管看上去，XLNet在预训练机制引入的Permutation Language Model这种新的预训练目标，和BERT采用Mask标记这种方式，有很大不同。其实深入思考一下，会发现，两者本质是类似的。区别主要在于：BERT 是直接在输入端显示地通过引入Mask标记，在输入侧隐藏掉一部分单词，让这些单词在预测的时候不发挥作用，要求利用上下文中其它单词去预测某个被Mask掉的单词；而XLNet则抛弃掉输入侧的Mask标记，通过Attention Mask机制，在Transformer内部随机Mask掉一部分单词（这个被Mask掉的单词比例跟当前单词在句子中的位置有关系，位置越靠前，被Mask掉的比例越高，位置越靠后，被Mask掉的比例越低），让这些被Mask掉的单词在预测某个单词的时候不发生作用。所以，本质上两者并没什么太大的不同，只是Mask的位置，Bert更表面化一些，XLNet则把这个过程隐藏在了Transformer内部而已， 这样，就可以抛掉表面的[Mask]标记。
 
@@ -1277,7 +1284,7 @@ BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XL
 
 1. PLM(Permutation Language Model)
 
-   采用这种方式主要是为了在自回归的模式下，来融入双向语言信息，BERT中采用的MLM(maked language model)，这种方式存在两个问题，一个是默认假设了token间是相互独立，在学习时也会损失一些token依赖信息；另外一个则是会导致预训练阶段和fine tune阶段模式不一致。
+   采用这种方式主要是为了在自回归的模式下，来融入双向语言信息，BERT中采用的MLM(masked language model)，这种方式存在两个问题，一个是默认假设了token间是相互独立，在学习时也会损失一些token依赖信息；另外一个则是会导致预训练阶段和fine tune阶段模式不一致。
 
 2. 引入Tranformer-XL的思路
 
@@ -1286,6 +1293,12 @@ BERT采用的NSP(Next Sequence Prediction)，是对两个片段进行建模，XL
 3. 增加了预训练阶段使用的数据规模以及质量
 
    这部分思路感觉是借鉴了GPT2的想法，大数据量+高质量的数据可以极大提升预训练的效果。
+
+#### 5.5.6 Q&A
+
+- 介绍一下XLNet模型
+
+  XLNet（Generalized Autoregressive Pretraining for Language Understanding）整体采用的模式是预训练+微调的模式，预训练阶段采用了自回归（auto-regressive）的思想，其核心创新点通过引入了PLM(Permutation Language Model)的机制融入了双向语言信息，引入了transformer-xl的思想来处理长文本，采用相对位置编码对多片段进行编码。
 
 ## 6. NLP任务模型
 
