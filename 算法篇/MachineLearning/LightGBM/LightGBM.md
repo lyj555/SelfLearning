@@ -32,7 +32,7 @@ $$
 
 ### 1.2 分割点的选择
 
-多数boosting tree算法分割点的选择都需要将特征进行预排序，然后采用不同的遍历策略来选择最优分割点，显然这种操作比较耗时且消耗内存。lightgbm算法使用histogram-based algorithm进行分割点的选择，其不需要对数据进行排序，而是将特征取值离散化为多个bins，然后只需要遍历bins即可获得特征的分割点。
+多数boosting tree算法分割点的选择都需要将特征进行预排序，然后采用不同的遍历策略来选择最优分割点，显然这种操作比较耗时且消耗内存。lightgbm算法使用histogram-based algorithm进行分割点的选择，其**不需要对数据进行排序**，而是将特征取值离散化为多个bins，然后只需要遍历bins即可获得特征的分割点。
 
 Lightgbm算法整体改进（EFB和GOSS）均是基于Histogram-based algorithm，如下是算法框架，
 
