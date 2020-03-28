@@ -252,7 +252,7 @@ GRU中某个CELL的示意图如下，
 $$
 \begin{aligned}
 r_t &= \sigma(W_r\cdot [h_{t-1},x_t]) \\
-\hat{h_t} &= \rm{tanh} (W \cdot [r_t*h_{t-1}, x_t])
+\tilde{h_t} &= \rm{tanh} (W \cdot [r_t*h_{t-1}, x_t])
 \end{aligned}
 $$
 
@@ -261,7 +261,7 @@ $$
 $$
 \begin{aligned}
 z_t &= \sigma(W_z\cdot [h_{t-1},x_t]) \\
-h_t &= (1-z_t)*h_{t-1} + z_t*\hat{h_t}
+h_t &= (1-z_t)*h_{t-1} + z_t*\tilde{h_t}
 \end{aligned}
 $$
 
