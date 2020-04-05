@@ -52,6 +52,8 @@ Lightgbm算法整体改进（EFB和GOSS）均是基于Histogram-based algorithm�
 
 针对当前已经训练好的模型，每个样本的梯度有着重要意义，梯度越大表明该样本under-trained，基于这种想法，GOSS采用的策略是将样本按照梯度值由大到小进行排序，选择前百分之$a$的样本，然后从剩余的样本中随机选择百分之$b$的样本（这部分样本梯度值乘以$\frac{1-a}{b}$进行放缩），**这种策略可以保证在不改变样本分布的前提下，减少样本数量且更关注那些under-trained样本**。
 
+> 可以通过期望的方式推导得到$\frac{1-a}{b}$。
+
 算法框架如下，
 
 ![](../../../pics/lgb_goss.png)
@@ -138,7 +140,7 @@ LightGBM的[官方文档](https://lightgbm.readthedocs.io/en/latest/)目前提�
 
 - **Optimization in Accuracy**
 
-  lightgbm算法采用Leaf-wise策略进行树的生长，在树生长时，从所有叶子中选择loss下降程度最大的叶子来生长（往往来说leaf-wise策略比level-wise策略获取更小的损失），当数据较小时leaf-wise策略容易导致过拟合，此时需要通过参数`max_depth`来控制树的生长。
+  lightgbm算法采用leaf-wise策略进行树的生长，在树生长时，从所有叶子中选择loss下降程度最大的叶子来生长（往往来说leaf-wise策略比level-wise策略获取更小的损失），当数据较小时leaf-wise策略容易导致过拟合，此时需要通过参数`max_depth`来控制树的生长。
 
   下面是两种决策树生长策略示意图，
 
