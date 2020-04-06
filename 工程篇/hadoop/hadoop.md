@@ -63,7 +63,7 @@ MapReduce是一个快速、高效、简单用于编写并行处理大数据程�
 
 - Map端操作   
     Map function 的运行方式就是从 RecordReader 那边读出一个 input key value pair, 处理，然后把处理结果（通常也是 key value pair 形式）写到一个Hadoop maintained memory buffer 里，然后读取下一个 input key value pair。
-    Hadoop maintained memory buffer 里的 key value pair 按 key 值排序，并且按照 reduce partition 分到不同 partition 里（这就是 partitioner 被调用的时候）。一旦 memory buffer 满了，就会被 Hadoop 写到 file 里，这个过程叫 spill, 写出的 file 叫 spill file.
+    Hadoop maintained memory buffer 里的 key value pair 按 key 值排序，并且按照 reduce partition 分到不同 partition 里（这就是 partitioner 被调用的时候）。一旦memory buffer满了，就会被Hadoop写到 file 里，这个过程叫 spill, 写出的 file 叫 spill file.
 
     >注意，这些 spill file 存在 map 所在 host 的 local disk 上，而不是我们之前介绍过的 HDFS.    
 
@@ -88,8 +88,8 @@ TaskTracker 有一个 heartbeat 机制，就是每隔几秒钟或者几分钟向
 #### 1.3.2 MRv2（YARN）
 经典的MapReduce程序最严重的限制主要关系到可伸缩性、资源利用和对与MapReduce不同工作的负载支持。在MapReduce框架中，作业执行受两种类型的进程控制：一个称为JobTracker的主要进程，它负责协调在集群上运行的所有作业，分配要在TaskTracker上要运行mapper function或者reducer function任务；另外一个就是许多的TaskerTracker进程，他们负责运行分配的任务并定期向JobTracker报告进度。
 
-基于之前存在缺点，YARN（也称为MRv2）诞生，它主要包括ResourceManager、ApplicationMaster、NodeManager，其中ResourceManager用来代替集群管理器，ApplicationMaster代替一个专用且短暂的JobTracker，NodeManager代替TaskTracker。
-MRv2最核心的思想是将之前的JobTracker的两个主要功能分离为连个单独的组件，这两个功能是资源管理和任务调度/监控。资源管理器(ResourceManager)负责全局管理所有的应用程序计算资源的分配，每一个应用程序的ApplicationMaster负责相应的调度和监控。这里的应用程序指MapReduce任务或者DAG（有向无环图）任务。
+基于之前存在缺点，YARN（也称为MRv2）诞生，**它主要包括ResourceManager、ApplicationMaster、NodeManager，其中ResourceManager用来代替集群管理器，ApplicationMaster代替一个专用且短暂的JobTracker，NodeManager代替TaskTracker**。
+MRv2最核心的思想是将之前的JobTracker的两个主要功能分离为两个单独的组件，这两个功能是资源管理和任务调度/监控。资源管理器(ResourceManager)负责全局管理所有的应用程序计算资源的分配，每一个应用程序的ApplicationMaster负责相应的调度和监控。这里的应用程序指MapReduce任务或者DAG（有向无环图）任务。
 
 yarn架构图如下，   
 ![yarn架构图](../../pics/yarn.png)
@@ -102,10 +102,10 @@ d. 每一个ApplicationMaster拥有多个Container在NodeManager上运行
 
 - **ResourceManager(资源管理器，RM)**   
 RM有两个重要的组件：Scheduler和ApplicationsManager。
-	- Scheduler   
+    - Scheduler 
 	负责分配资源给每个正在运行的应用（仅负责分配资源），资源的形态以container表示，后面介绍
     - ApplicationManager   
-    负责管理整个系统中所有应用程序，包括应用程序提交、与调度器协商资源以启动ApplicationMaster、监控ApplicationMaster运行状态并在失败时重新启动它等
+      负责管理整个系统中所有应用程序，包括应用程序提交、与调度器协商资源以启动ApplicationMaster、监控ApplicationMaster运行状态并在失败时重新启动它等
 
 - **ApplicationMaster(AM)**   
 用户提交的每一个应用程序均包含一个AM，主要功能：
@@ -172,7 +172,7 @@ set hive.enforce.sorting=true;
   - `tasktracker.http.threads` 控制 map 端有多少个 thread 负责向 reduce 传送 map output. 本着并行计算的原则，可以适当调高;
   - `mapred.reduce.parallel.copies` 这个参数控制 reduce 端有多少个 thread 去 copy map output. 本着并行计算的原则，可以适当调高;
   - `mapred.job.reduce.input.buffer.percent` 控制 reduce host 上 JVM 中用于 merge map output 的比例。可以适当调高;
-  - `io.sort.factor`控制 reduce 端同时被 sort 的文件的个数。我们说 reduce 端 file sor t分批进行，这个参数就是每批有多少个。如果内存大，可以适当增加，以减少 sort 批次。
+  - `io.sort.factor`控制 reduce 端同时被 sort 的文件的个数。我们说 reduce 端 file sort分批进行，这个参数就是每批有多少个。如果内存大，可以适当增加，以减少 sort 批次。
 
 - Reduce优化
 
@@ -348,7 +348,7 @@ HBase 为每个值维护了多级索引,即：”key, column family, column name
 4. Region是Hbase中分布式存储和负载均衡的最小单元，不同Region分布到不同RegionServer上。、
 5. Region虽然是分布式存储的最小单元，但并不是存储的最小单元。Region由一个或者多个Store组成，每个store保存一个columns family；每个Strore又由一个memStore和0至多个StoreFile组成，StoreFile包含HFile；memStore存储在内存中，StoreFile存储在HDFS上。
 
-
+有关hbase的介绍，[这篇文章](https://www.jianshu.com/p/53864dc3f7b4)不错。
 
 ## Reference
 - [五分钟零基础搞懂Hadoop](https://zhuanlan.zhihu.com/p/20176725)
