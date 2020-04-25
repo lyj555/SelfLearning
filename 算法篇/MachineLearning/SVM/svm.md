@@ -246,3 +246,4 @@ $$
 - 机器学习西瓜书(p121-p133)
 
 - [关于支持向量机(SVM)的高斯核和惩罚因子C的理解（简单易懂）](https://blog.csdn.net/lin_limin/article/details/81135754)
+
