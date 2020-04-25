@@ -158,6 +158,8 @@ LightGBM的[官方文档](https://lightgbm.readthedocs.io/en/latest/)目前提�
 
   The basic idea is to sort the categories according to the training objective at each split. More specifically, LightGBM sorts the histogram (for a categorical feature) according to its accumulated values (`sum_gradient` / `sum_hessian`) and then finds the best split on the sorted histogram.
 
+  > 这个取值sum_gradient/sum_hessian恰好对应xgboost的最优叶子得分，想必是这样设计的一个原因
+
 - **Optimization in Parallel Learning**
 
   - 特征并行 
