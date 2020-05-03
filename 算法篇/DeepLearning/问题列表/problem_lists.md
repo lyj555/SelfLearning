@@ -2,16 +2,7 @@
 
 ## 1. 如何设置网络初始值
 
-**一般总是使用服从（截断）高斯或均匀分布的随机值**，具体是高斯还是均匀分布影响不大，但是也没有详细的研究。
-
-但是，初始值的大小会对优化结果和网络的泛化能力产生较大的影响。
-
-一些启发式初始化策略通常是根据输入与输出的单元数来决定初始权重的大小，比如 Glorot and Bengio (2010) 中建议使用的标准初始化，其中 m 为输入数，n 为输出数
-$$
-W_{i,j} \sim U(-\sqrt{\frac{6}{m+n}}, \sqrt{\frac{6}{m+n}})
-$$
-
-还有一些方法推荐使用随机正交矩阵来初始化权重 (Saxe et al., 2013)。
+Xavier（glorot initialization）和Kaiming（He intialization）。
 
 ## 2. 为什么推荐使用高斯分布？
 当我们由于缺乏关于某个实数上分布的先验知识而不知道该选择怎样的形式时，正态分布是默认的比较好的选择，其中有两个原因：
@@ -301,7 +292,57 @@ batch normalization依赖于batch的大小，当batch值很小时，计算的均
 
 参考：[深度学习中 Batch Normalization为什么效果好？](https://www.zhihu.com/question/38102762/answer/85238569) 
 
-## 14. 更新算法和激活函数的相关问题，补充
+## 14. 深度学习中如何调参，或者调参策略是什么？
+
+类似机器学习，刚开始不要加入过多内容（比如dropout/BN等正则），简单的设置一下epoch和学习率观察验证集的变化情况，然后根据此进行调整。
+
+然后根据训练集和验证集的反应来判断，如果过拟合，调整网络参数（模型参数），加入正则项、数据增强，调整整体参数，加入早停机制等等（相当于是问题10）；
+
+如果欠拟合，同样调整网络参数，增加epoch啦学习率啥的；如果出现一些极端反应，比如训练集loss在不断上升，反而验证集loss下降，有必要查看数据和代码，有必要的情况下，看看是不是loss定义的有问题，是不是需要更换loss。
+
+## 15. **交叉熵函数**与**最大似然函数**的联系和区别？
+
+区别：**交叉熵函数**使用来描述模型预测值和真实值的差距大小，越大代表越不相近；**似然函数**的本质就是衡量在某个参数下，整体的估计和真实的情况一样的概率，越大代表越相近。
+
+> 可以理解为两者的出发点不一致
+
+联系：**交叉熵函数**可以由最大似然函数在伯努利分布的条件下推导出来，或者说**最小化交叉熵函数**的本质就是**对数似然函数的最大化**。
+
+> 可以通过最大化似然函数的方式推导得出交叉熵函数
+
+## 16. 神经网络中，如果初始化参数为0，会有什么后果，如果为相同值的呢？
+
+所有参数将得不到更新，会陷一个僵局。
+
+以三层的前馈神经网络（输入、隐含和输出）为例，
+
+假设输入$x \in R^m$，隐含层$h \in R^n$，输出层$y \in R^l$。
+
+假设输入和隐含层的连接参数为$w_{ij}, i=1,..,m, j=1,..,n$，隐含层和输出层的连接参数为$v_{jk}, j=1,..,n, k=1,..,l$。
+
+那么前馈的表达式为，$h_j = \sum_{i=1}^m w_{ij}x_j, \hat{h_j} = f(h_j), \hat{y_k}=\sum_{j=1}^n v_{jk}\hat{h_j}$。
+
+记单个样本的loss为$L = \sum_{k=1}^l loss(y_k, \hat{y_k})$。
+
+其中包含两部分参数，分别为$w_{ij}$和$v_{jk}$。那么BP的表达式为
+$$
+\begin{cases}
+\frac{\partial L}{\partial v_{jk}} &= \frac{\partial L}{\partial \hat{y_k}} \cdot \frac{\partial \hat{y_k}}{\partial v_{jk}} \\ 
+&= \frac{\partial L}{\partial \hat{y_k}} \cdot \hat{h_j}\\
+\frac{\partial L}{\partial w_{ij}} &= [\sum_{k=1}^l \frac{\partial L}{\partial \hat{y_k}}\cdot \frac{\partial \hat{y_k}}{\partial \hat{h_j}}] \cdot \frac{\partial \hat{h_j}}{\partial h_j}\cdot\frac{\partial h_j}{\partial w_{ij}} \\ 
+&= [\sum_{k=1}^l \frac{\partial L}{\partial \hat{y_k}}\cdot v_{jk}] \cdot \frac{\partial \hat{h_j}}{\partial h_j}\cdot\frac{\partial h_j}{\partial w_{ij}}
+\end{cases}
+$$
+更新如下，
+$$
+w_{ij} = w_{ij} - \eta \frac{\partial L}{\partial w_{ij}} \\
+v_{ij} = v_{ij} - \eta \frac{\partial L}{\partial v_{ij}}
+$$
+如果初始化参数全部为0，可发现此时$\frac{\partial L}{\partial w_{ij}}=0$，此时按照上面的方式更新之后，仍然有$w_{ij}=0$，将无法得到更新。
+
+如果设置为相同值，此时参数可以更新了但是每一层的参数是相同的，相当于缩小了模型的容量。
+
+## 15. 更新算法和激活函数的相关问题，补充
 
 
 

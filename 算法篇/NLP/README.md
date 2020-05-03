@@ -443,6 +443,14 @@ word2vec把语料库中的每个单词当成原子的，它会为每个单词生
 
 于是fastText的核心思想就是：**将整篇文档的词及n-gram向量叠加平均得到一个向量，用此向量来表示文档，然后用文档向量做softmax多分类**。这中间涉及到两个技巧：字符级n-gram特征的引入以及分层Softmax分类。
 
+#### 3.2.4 模型参数
+
+一般分类来说核心调整的参数：
+
+epoch和lr。再细致一点就是词向量维度、wordNgram和loss（softmax、hs、ns），还可以指定一些限制项（最小词汇出现的次数和最大次数，最小ngram的出现次数和最大次数）。
+
+> 注意个参数bucket，其会把ngram的信息hash到捅中，相同的桶中的词向量是一致的，所以桶的数量越大冲突的概率就越小。官网默认数量是二百万
+
 
 ### 3.3 Glove
 
@@ -1155,7 +1163,7 @@ BERT最后训练了两组参数的模型，BERT(base)（L=12, H=768, A=12, 整�
 
 - 简单介绍BERT模型？
 
-  首先BERT（Bidirectional Encoder From Transformer）是基于Transformer的双向编码的语言模型。整体模式是预训练和微调。在预训练阶段创新性的采用了MaskedLM（学习预测词的上下文语义）和NSP（句子级别信息），且网络结构也是比较深（base的模型就12个transformer blcok，big的模型是24层），真正意义的语言模型中的深度模型，且效果基本都达到了SOAT。
+  首先BERT（Bidirectional Encoder From Transformer）是基于一个双向编码的且基于Transformer的语言模型。其中双向是指同时考虑预测词汇的前文信息和后文信息。整体模式是预训练和微调。在预训练阶段创新性的采用了MaskedLM（学习预测词的上下文语义）和NSP（句子级别信息），模型搭建上，基于transformer网络进行了深层的堆叠，来捕获文本的深层语义，整体效果在NLP各个领域基本达到了SOTA效果。
 
 ### 5.4 GPT-2
 

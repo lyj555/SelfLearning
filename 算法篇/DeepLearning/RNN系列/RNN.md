@@ -242,7 +242,45 @@ $$
 
 所以整体的参数量为$4 \times (h*(n+h) + h)$
 
-### 3.4 伪代码 
+### 3.5 bi-LSTM的pytorch代码
+
+```python
+class RNN(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, hidden_dim):
+        super(RNN, self).__init__()       
+        # [0-10001] => [100] 编码10000个词，每个词有100个特征
+        self.embedding = nn.Embedding(vocab_size, embedding_dim) #[10000,100]
+        # [100] => [256] 使用bi-lstm,使用dropout防止过拟合
+        self.rnn = nn.LSTM(embedding_dim, hidden_dim, num_layers=2,                       
+                           bidirectional=True, dropout=0.5)
+        # [256*2] => [1]
+        self.fc = nn.Linear(hidden_dim*2, 1) 
+        self.dropout = nn.Dropout(0.5)
+        
+    def forward(self, x):
+        """
+        x: [seq_len, b] vs [b, 3, 28, 28]
+        """
+        # [seq, b, 1] => [seq, b, 100] 先编码再dropout
+        embedding = self.dropout(self.embedding(x))
+ 
+        # output: [seq, b, hid_dim*2]
+        # c/h: [num_layers*2, b, hid_dim]
+        output, (hidden, cell) = self.rnn(embedding) #[h,c]默认为0所以输入省了
+        
+        # 取ht,和ht2做一次连接
+        # [num_layers*2, b, hid_dim] => 2 of [b, hid_dim] => [b, hid_dim*2]
+        hidden = torch.cat([hidden[-2], hidden[-1]], dim=1)
+        
+        # [b, hid_dim*2] => [b, 1]
+        hidden = self.dropout(hidden)
+        out = self.fc(hidden)
+        return out
+```
+
+
+
+### 3.6 伪代码 
 ```python
 def LSTM_CELL(prev_ct, prev_ht, input):
     '''
@@ -265,10 +303,11 @@ def LSTM_CELL(prev_ct, prev_ht, input):
     ht = ot*tanh(Ct)  # 当前时刻的内容
     return ht, Ct
 ```
-### 3.5 参考资源
+### 3.7 参考资源
 
 - [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)   
 - [LSTM内部结构以及问题](https://github.com/imhuay/Algorithm_Interview_Notes-Chinese/blob/master/A-%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/B-%E4%B8%93%E9%A2%98-RNN.md#lstm-%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84)
+- [实战PyTorch（一）：Bi-LSTM 情感分类实战](https://blog.csdn.net/sleepinghm/article/details/105121339)
 
 ## 4. GRU(2014)
 GRU(Gated Recurrent Unit)，和LSTM类似，也是带有门机制的循环神经网络。GRU中设计两个门，分别是更新门和重置门，其参数量要少于LSTM。  
