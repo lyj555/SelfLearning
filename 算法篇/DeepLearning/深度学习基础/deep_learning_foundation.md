@@ -801,6 +801,8 @@ $$
 
 > Note：当为两个类别时，此时Loss可以推导为$\ln(1+e^{y\cdot f(x)})$，也就是log损失。
 
+这篇[文章（Softmax函数与交叉熵）](https://mp.weixin.qq.com/s?__biz=MzI3ODgwODA2MA==&mid=2247488667&idx=2&sn=63931e4cce065e36d12768d862101cec&chksm=eb500008dc27891ec5b5c278a7e814b617f957cfd8180ce0843926274e4c9a3329ac303bbb10&mpshare=1&scene=1&srcid=&sharer_sharetime=1589121249502&sharer_shareid=e53fc678b87c854a7577418ee1c671ac&exportkey=A7wCbTlgTn8Dsj8geLXhLdg%3D&pass_ticket=XdZwjhxfzgnmad8XjAGtxUyAfsSlOoTZb260GLb27Poo5t%2Fu2R1xngdT9Ji8KpYM#rd)提到了softmax的求导以及对应的softmax函数一些特性和交叉熵损失。
+
 ## 7. 设置网络初始值
 
 ### 7.1 Xavier方法

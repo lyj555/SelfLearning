@@ -129,12 +129,12 @@ $$
 - $\frac{\partial E_t}{\partial W}$的计算  
 由于$W$是各个时刻共享的，所以$t$时刻之前每个时刻$U$的变化对$E_t$均有贡献。  
 $$
-\frac{\partial E_t}{\partial W} = \sum\limits_{k=0}^t {\frac{\partial E_k}{\partial s_k} \cdot \frac{\partial s_k}{\partial W}}
+\frac{\partial E_t}{\partial W} = \sum\limits_{k=0}^t {\frac{\partial E_t}{\partial s_k} \cdot \frac{\partial s_k}{\partial W}}
 $$
 - $\frac{\partial E_t}{\partial U}$的计算  
 计算方式类似$\frac{\partial E_t}{\partial W}$  
 $$
-\frac{\partial E_t}{\partial U} = \sum\limits_{k=0}^t {\frac{\partial E_k}{\partial s_k} \cdot \frac{\partial s_k}{\partial U}}
+\frac{\partial E_t}{\partial U} = \sum\limits_{k=0}^t {\frac{\partial E_t}{\partial s_k} \cdot \frac{\partial s_k}{\partial U}}
 $$
 
 ### 2.2 梯度消失/爆炸
@@ -143,13 +143,13 @@ $$
 
 $$
 \begin{aligned}
-\frac{\partial E_t}{\partial W} &= \sum\limits_{k=0}^t {\frac{\partial E_k}{\partial \hat{y_t}} \cdot \frac{\partial \hat{y_t}}{\partial z_t} \cdot \frac{\partial z_t}{\partial h_t} \cdot \frac{\partial h_t}{\partial s_t} \cdot \frac{\partial s_t}{\partial s_k} \cdot \frac{\partial s_k}{\partial W}}  \\
+\frac{\partial E_t}{\partial W} &= \sum\limits_{k=0}^t {\frac{\partial E_t}{\partial \hat{y_t}} \cdot \frac{\partial \hat{y_t}}{\partial z_t} \cdot \frac{\partial z_t}{\partial h_t} \cdot \frac{\partial h_t}{\partial s_t} \cdot \frac{\partial s_t}{\partial s_k} \cdot \frac{\partial s_k}{\partial W}}  \\
 &= \sum\limits_{k=0}^t {\frac{\partial E_k}{\partial \hat{y_t}} \cdot \frac{\partial \hat{y_t}}{\partial z_t} \cdot \frac{\partial z_t}{\partial h_t} \cdot \frac{\partial h_t}{\partial s_t} \cdot \left(\prod\limits_{j=k+1}^t{\frac{\partial s_j}{\partial s_{j-1}}} \right) \cdot \frac{\partial s_k}{\partial W}}
 \end{aligned}
 $$
 
 上式中，注意到$\frac{\partial s_j}{\partial s_{j_1}}$是对向量进行求偏导，所以结果是一个矩阵(Jacobian matrix)。因为tanh激活函数将值映射到(-1, 1)，导数范围(0, 1)，sigmoid激活函数将值映射到(0, 1)，导数范围(0, 0.25)，可以证明矩阵的二阶范数的上界是1. 一旦当矩阵中的值接近饱和，当矩阵相乘时，其值就会指数级别下降，造成梯度消失，换言之，这种现象导致RNN不能学习到长期的依赖关系。对于前馈神经网络来说当层数非常深时，也会面临同样的问题，梯度消失。  
-**解决方式之一便是替换激活函数，比如换为Relu，但这样虽然可以避免梯度消失的问题，**但是存在梯度爆炸问题（问题本质是各个单元的参数共享，还是存在矩阵连乘的问题），所以一个改进的方式是将参数$W$初始化为单位矩阵。  
+**解决方式之一便是替换激活函数，比如换为Relu，但这样虽然可以缓解梯度消失的问题，**但是存在梯度爆炸问题（问题本质是各个单元的参数共享，还是存在矩阵连乘的问题），所以一个改进的方式是将参数$W$初始化为单位矩阵。  
 
 > 为什么CNN中使用Relu较少出现上面的问题
 > 主要原因是CNN中每层的参数$W$不同，且在初始化时，是独立同分布的，可以在一定程度上可以相互抵消，即使多层之后较小可能出现上面的问题
@@ -161,6 +161,8 @@ $$
 
 ## 3. LSTM(1997)
 LSTM(Long Short-Term Memory)，长短期记忆神经网络，是循环神经网络的一种。在上面标准RNN结构中，由于存在梯度消失的问题，所起其难以学习到长期的依赖，LSTM的设计的**门机制**可以很大程度上避免梯度的消失，而学习到长期的依赖关系。    
+
+> LSTM可以很大程度缓解梯度消失，但是不能解决梯度爆炸的问题，梯度爆炸需要另外的技术解决，技术上来说比梯度消失要容易，很少有人大篇幅来论证。
 
 LSTM网络的框架仍然标准的RNN框架（下图），而和标准RNN框架不同的是其计算隐含层的状态。标准的RNN计算计算隐藏层是
 $s_t = f(x_t, s_{t-1}) = \rm{tanh}(Ux_t+Ws_{t-1})$，其中$U,W$是参数，$x_t$是第$t$步的输入，$s_{t-1}$是$t-1$步的隐藏层计算的状态，而LSTM只是改进了函数$f$，可以理解$s_t = LSTM(x_t, s_{t-1})$，接下俩看LSTM的具体计算模式。

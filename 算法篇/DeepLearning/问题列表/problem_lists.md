@@ -182,13 +182,26 @@ $$
 
 ## 9. 为什么LSTM要优于RNN？
 
-- LSTM可以避免RNN中出现的梯度消失(gradient vanishing)，但是不能解决梯度爆炸（解决方式参考上面的问题）
-
-  > 了解[为什么相比于RNN，LSTM在梯度消失上表现更好？](https://www.zhihu.com/question/44895610)
+- LSTM可以避免RNN中出现的梯度消失(gradient vanishing)
 
 - 长短期的记忆，记忆的信息更多一些
-
 - 4倍于RNN的参数量，学习到东西更多些
+
+## 10. 为什么LSTM相较于RNN可以缓解梯度消失？
+
+LSTM能解决这个问题是因为:
+
+- 长链C
+
+  LSTM的memory值C是将memory值和input累加的，传统RNN每次都会把之前的memory直接清空
+
+- 门控机制
+
+  LSTM有门控机制，在forget门关闭的情况下，memory的值是不更新的
+
+> 了解[为什么相比于RNN，LSTM在梯度消失上表现更好？](https://www.zhihu.com/question/44895610)
+>
+> 可以理解为在连乘项中，额外引入偏置信息（可以通过门控机制控制），在连乘时不会是一直较小的数连乘了，i×j×k --> (i+b)×(j+b)×(k+b)；个人觉得这部分的回答就是对应这第一个原因（长链C）
 
 ## 10. 深度网络中出现过拟合往往怎么解决？
 
