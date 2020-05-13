@@ -305,9 +305,9 @@ $$L = \frac{1}{m}\sum_{k=1}^{m}L_k$$
   
 - 算法描述   
   ![](../../../pics/带动量SGD.png)
-  从形式上看，动量算法引入了变量$v$充当速度角色，代表参数在参数空间移动的方向和速率，速度$v$累积了梯度元素$g$，相对于$\epsilon, \alpha$越大，之前的梯度对现在的方向影响也越大。   
+  从形式上看，动量算法引入了变量$v$充当速度角色，代表参数在参数空间移动的方向和速率，**速度$v$累积了梯度元素**$g$，相对于$\epsilon, \alpha$越大，之前的梯度对现在的方向影响也越大。   
   在SGD中，步长是梯度范数乘以学习率。现在，步长取决于**梯度序列的大小和排列**。当许多连续的梯度指向相同的方向时，步长最大。   
-  如果动量算法总是观测到梯度$g$，那么它回在方向$-g$上不停地加速，知道达到最终速度，其中步长大小为，
+  如果动量算法总是观测到梯度$g$，那么它会在方向$-g$上不停地加速，知道达到最终速度，其中步长大小为，
   $$
   v \leftarrow \alpha v - \epsilon g \Longrightarrow v \leftarrow \frac{-\epsilon g}{1-\alpha}
   $$
@@ -628,11 +628,9 @@ $$
 \hat{x_k} \leftarrow \frac{x_k-\rm E(x_k)}{\sqrt{\rm Var(x_k) + \epsilon}}
 $$
 
-
-BN 可以看作在各层之间加入了一个新的计算层，对数据分布进行额外的约束，从而增强模型的泛化能力；
+**BN 可以看作在各层之间加入了一个新的计算层**，对数据分布进行额外的约束，从而增强模型的泛化能力；
 但同时 BN 也降低了模型的拟合能力，破坏了之前学到的特征分布；
 为了恢复数据的原始分布，BN 引入了一个重构变换来还原最优的输入数据分布,
-
 $$
 y_k \leftarrow \gamma \cdot \hat{x_k} + \beta
 $$
@@ -669,7 +667,7 @@ $$
 
 #### 5.1.3 为什么训练时不采用移动平均
 BN author:  
-> "It is natural to ask whether we could simply use the moving averages µ, σ to perform the normalization during training, since this would remove the dependence of the normalized activations on the other example in the minibatch. This, however, has been observed to lead to the model blowing up. As argued in [6], such use of moving averages would cause the gradient optimization and the normalization to counteract each other. For example, the gradient step may increase a bias or scale the convolutional weights, in spite of the fact that the normalization would cancel the effect of these changes on the loss. This would result in unbounded growth of model parameters without actually improving the loss. It is thus crucial to use the minibatch moments, and to backpropagate through them."
+> "It is natural to ask whether we could simply use the moving averages µ, σ to perform the normalization during training, since this would remove the dependence of the normalized activations on the other example in the minibatch. This, however, has been observed to lead to the model blowing up. As argued in [6], such use of moving averages would **cause the gradient optimization and the normalization to counteract each other**. For example, the gradient step may increase a bias or scale the convolutional weights, in spite of the fact that the normalization would cancel the effect of these changes on the loss. This would result in unbounded growth of model parameters without actually improving the loss. It is thus crucial to use the minibatch moments, and to backpropagate through them."
 
 
 简言之，作者认为训练时使用移动平均可能会和梯度优化存在冲突，在网络在使用梯度优化时，会对权重增加一些偏移，但是在使用BN后，可能会将这些偏移抵消掉。
@@ -720,7 +718,7 @@ Xavier等参数初始化的目的是为了使网络各层的输入输出具有�
 #### 5.3.3 dropout的作用
 
 1）加快训练速度   
-通过随机将删除神经元，相当于减少了需要学习的参数，可以加快训练
+      通过随机将删除神经元，相当于减少了需要学习的参数，可以加快训练
 
 2）降低过拟合  
 - 类似baggin策略    
