@@ -94,3 +94,7 @@ git rm --cashed <filename>  删除暂存区或分支上的文件, 但工作区�
    git pull
    ```
 
+## 7. 查看不同
+
+git diff HEAD -- <filename> 查看工作区和本地仓库的不同
+
