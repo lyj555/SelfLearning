@@ -27,13 +27,23 @@
 4. `git commit -m "做出改动的注释"`
 5. `git push origin master`
 
-## 3. 撤销git add
+## 3. 撤销工作区修改
+
+此时状态：文件没有被git add到索引区
+
+git checkout <filename>
+
+## 4. 撤销git add
+
+此时状态：文件已经执行了git add
 
 git reset HEAD <filename>  撤销某个文件的git add
 
 git reset HEAD 撤销所有文件的git add
 
-## 4. 撤销git commit
+## 5. 撤销git commit
+
+此时状态：文件执行了git commit
 
 git reset --soft HEAD^  撤销本次commit，不撤销git add，仍然保留修改的代码。
 
@@ -47,7 +57,7 @@ git reset --hard HEAD^ 撤销本次的commit，同时撤销git add以及修改�
 
 git commit -amend
 
-## 5. 删除文件
+## 6. 删除文件
 
 如果在在工作区，直接手动删除即可。
 
@@ -55,7 +65,7 @@ git rm <filename> 删除暂存区和分支上的文件，同时工作区也不�
 
 git rm --cashed <filename>  删除暂存区或分支上的文件, 但工作区需要使用, 只是**不希望被版本控制**（适用于已经被git add,但是又想撤销的情况）
 
-## 6. 冲突解决
+## 7. 冲突解决
 
 本地pull时和远程仓库的文件存在冲突。
 
@@ -94,7 +104,7 @@ git rm --cashed <filename>  删除暂存区或分支上的文件, 但工作区�
    git pull
    ```
 
-## 7. 查看不同
+## 8. 查看不同
 
 git diff HEAD -- <filename> 查看工作区和本地仓库的不同
 
