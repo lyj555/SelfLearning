@@ -70,6 +70,8 @@ Lightgbm算法整体改进（EFB和GOSS）均是基于Histogram-based algorithm�
 
 当许多特征的取值很少同时取非零值时，说明这些特征比较稀疏，完全可以将其合并，称这个合并体为`exclusive feature bundle`，**在做分割点的选择时，和单个特征类似，完全可以为一个feature bundle建立一个直方图，然后寻找最佳分割点。**
 
+> 通常被捆绑的特征都是互斥的，即一个特征为零，另一个特征不为零，这样捆绑特征后不会损失信息。
+
 该算法需要实现两个功能，一个是确定需要bundle的特征，其次是确定如何进行特征的bundle。
 
 - 确定特征的bundle集合
@@ -95,6 +97,8 @@ Lightgbm算法整体改进（EFB和GOSS）均是基于Histogram-based algorithm�
 第二程for循环中，遍历所有的样本，为每个样本生成一个新的bin值。
 
 第三层for循环中，遍历bundle set中的特征，将第$j$个特征的bin值加上第$j$特征的累计值（确保不同特征之间不会出现bin值交叉），以此作为新的bin值。
+
+比如A特征取值范围是[0, 10)，B特征取值范围是[0, 20)，那么就给B添加一个偏置10,那么B的范围就变为[10, 30)，所以捆绑后的特征范围就是[0,30)。所以要从最后捆绑的特征取值中区分特征之间的关系。
 
 > 原论文中设置参数$\gamma$来控制特征之间发生冲突的比例，设置为0时，表示不允许有冲突的发生。
 
@@ -162,7 +166,13 @@ LightGBM的[官方文档](https://lightgbm.readthedocs.io/en/latest/)目前提�
 
   The basic idea is to sort the categories according to the training objective at each split. More specifically, LightGBM sorts the histogram (for a categorical feature) according to its accumulated values (`sum_gradient` / `sum_hessian`) and then finds the best split on the sorted histogram.
 
-  > 这个取值sum_gradient/sum_hessian恰好对应xgboost的最优叶子得分，想必是这样设计的一个原因
+  > 这个取值sum_gradient/sum_hessian恰好对应xgboost的最优叶子得分，想必是这样设计的一个原因，
+  >
+  > 相当于取该值表示该类目下使得损失最小的取值。
+
+  根据该值对bin容器从小到达进行排序，然后分从右到左和从左到右进行搜索，得到最优分裂阈值。但是没有搜索所有的bin容器，而是设定了一个搜索bin容器数量的上限值，默认为32，即参数`max_num_cat`。
+
+  对离散特征实行的是many vs many策略，对这32个bin中最优划分的阈值的左边或者右边的所有bin容器就是一个many集合，而其他的bin容器就是另一个many集合。
 
 - **Optimization in Parallel Learning**
 
