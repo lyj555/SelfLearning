@@ -256,13 +256,45 @@ git merge时，有两种合并方式，
 
    ====和stashed changes之间的内容就是本地修改的内容，手动修改完成即可。
 
-## 6. 其它git命令
+## 6. tag
+
+- 当前的commit打tag
+
+  `git tag -a <tag name> -m "tag comment" `
+
+- 本地tag推送至远程
+
+  - push全部的tags
+
+    `git push orgin --tags`
+
+  - push指定的tag
+
+    `git push origin <tag name>`
+
+- 列举当前的tag list
+
+  `git tag`
+
+- 删除本地标记
+
+  `git tag -d <tag name>`
+
+- 删除的tag推送远程
+
+  `git push origin :refs/tags/<tag name>` 
+
+## 7. 其它git命令
 
 `git diff HEAD -- <filename>` 查看工作区和本地仓库的不同
 
 `git status` 现实本地仓库的状态信息
 
 `git log` 显示最基本的提交信息
+
+`git log -p <file>` 查看指定文件的提交历史
+
+`git blame <file>` 以列表的方式查看指定文件的提交历史
 
 ## References
 
