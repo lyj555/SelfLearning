@@ -143,13 +143,13 @@
 
 最后简单概括（上面整体说的任务感觉有点多且有点繁琐），通常而言，绝大部分NLP问题可以归入四类任务中，分别是**序列标注**、**分类任务**、**句子关系判断**和**生成式任务**。
 
-- 序列标注
+- 序列标注（sequence labeling）
 
   这是最典型的NLP任务，比如中文分词，词性标注，命名实体识别，语义角色标注等都可以归入这一类问题，它的特点是句子中每个单词要求模型根据上下文都要给出一个分类类别。
 
   这部分任务的特点是：输入为一段文本，输出为一段文本，输入和输出等长（N-N）。
 
-- 分类任务
+- 分类任务（text classification）
 
   比如我们常见的文本分类，情感计算，层次分类，多标签分类等都可以归入这一类。
 
@@ -161,7 +161,7 @@
 
   这部分任务的特点是：输入为多段文本，输出的为一段文本或者标签（n-N-M or 1）。
 
-- 生成式任务
+- 生成式任务（text generation）
 
   比如机器翻译，文本摘要，写诗造句，看图说话等都属于这一类。它的特点是输入文本内容后，需要自主生成另外一段文字。
   
@@ -334,7 +334,11 @@ TF-IDF是两部分的组合，分别为TF和IDF。
 
     这种算法无法体现词的位置信息，出现位置靠前的词与出现位置靠后的词，都被视为重要性相同，这是不正确的。（一种解决方法是，对全文的第一段和每一段的第一句话，给予较大的权重）
 
-### 2.3 模型概述
+### 2.3 LDA&LSA
+
+
+
+### 2.4 模型概述
 
 [这篇文章](https://mp.weixin.qq.com/s?__biz=MzA4MTk3ODI2OA==&mid=2650344227&idx=1&sn=a40c9f90fb58d8a28713d01214f41f00&chksm=87811dd0b0f694c615a4ecad32dceb9cabf425d25f231a1e3df5295807e8d4e9d84730dd7fa7&mpshare=1&scene=1&srcid=&sharer_sharetime=1567043328434&sharer_shareid=e53fc678b87c854a7577418ee1c671ac&pass_ticket=6%2BFt82b20NkDrXw7JtruZMEmpKehLR8Y1SJBjeUyIHfZ%2FAO1GgK5sIACDx8vanDS#rd)提及了NLP的一些主流模型。
 
@@ -745,19 +749,19 @@ $$
 
 模型框架图如下，
 
-![](../../pics/transformer.webp)
+![](../../pics/transformer.jpg)
 
 看上去构造还是比较复杂的，先从大面进行理解，然后一步步细化。Transformer的本质仍然是Seq2Seq的思想，采用了Encoder-Decoder框架，如下所示，
 
-![](../../pics/seq2seq.webp)
+![](../../pics/seq2seq.jpg)
 
 论文中提到了Transformer采用了多个Encoder和多个Decoder进行结合，进一步将上图展开后有，
 
-![](../../pics/transformer_encoder_decoder.webp)
+![](../../pics/transformer_encoder_decoder.jpg)
 
 也就是说，Encoder的输出，会和每一层的Decoder进行结合。取其中一层（也即上面第一张模型架构图）进行详细的展示（简化版）如下，
 
-![](../../pics/transformer_simply.webp)
+![](../../pics/transformer_simply.jpg)
 
 上面提及的结果相当于模型中使用的一个Encoder和一个Decoder，相当于是最上面提到transformer模型架构图的简化形式。在Encoder中，对于输入做Self-Attention，然后前馈输出；在Decoder中，同样对输出进行Self-Attention操作，然后对Encoder中的输出和Self-Attention的结果做一个Attention，最终在前向传播。
 
