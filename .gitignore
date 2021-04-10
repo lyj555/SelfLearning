@@ -1,4 +1,5 @@
 .ipynb_checkpoints
+.DS_Store
 *.log
 *.pyc
 __pycache__
@@ -7,4 +8,5 @@ __pycache__
 data
 .idea
 *cased_L-12_H-768_A-12*
+算法篇/NLP/papers/
 
