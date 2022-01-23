@@ -221,7 +221,7 @@ $$
 i_t = \sigma(W_i[x_t; h_{t-1}]+b_i) \\
 f_t = \sigma(W_f[x_t; h_{t-1}]+b_f) \\
 o_t = \sigma(W_o[x_t; h_{t-1}]+b_o) \\
-\tilde{C_t} = \sigma(W_c[x_t; h_{t-1}]+b_c) \\
+\tilde{C_t} = \tanh(W_c[x_t; h_{t-1}]+b_c) \\
 \end{cases}
 $$
 

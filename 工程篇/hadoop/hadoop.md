@@ -92,7 +92,7 @@ TaskTracker 有一个 heartbeat 机制，就是每隔几秒钟或者几分钟向
 MRv2最核心的思想是将之前的JobTracker的两个主要功能分离为两个单独的组件，这两个功能是资源管理和任务调度/监控。资源管理器(ResourceManager)负责全局管理所有的应用程序计算资源的分配，每一个应用程序的ApplicationMaster负责相应的调度和监控。这里的应用程序指MapReduce任务或者DAG（有向无环图）任务。
 
 yarn架构图如下，   
-![yarn架构图](../../pics/yarn.png)
+![yarn架构图](../../pics/yarn.jpg)
 
 将JobTracker和TaskTracker进行分离，它由下面几大构成组件：   
 a. 一个全局的资源管理器 ResourceManager   
@@ -349,6 +349,10 @@ HBase 为每个值维护了多级索引,即：”key, column family, column name
 5. Region虽然是分布式存储的最小单元，但并不是存储的最小单元。Region由一个或者多个Store组成，每个store保存一个columns family；每个Strore又由一个memStore和0至多个StoreFile组成，StoreFile包含HFile；memStore存储在内存中，StoreFile存储在HDFS上。
 
 有关hbase的介绍，[这篇文章](https://www.jianshu.com/p/53864dc3f7b4)不错。
+
+## 4. Hive和Hbase的区别&联系
+
+参考：https://www.zhihu.com/question/21677041
 
 ## Reference
 - [五分钟零基础搞懂Hadoop](https://zhuanlan.zhihu.com/p/20176725)

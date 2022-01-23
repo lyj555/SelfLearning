@@ -50,7 +50,7 @@ spark项目包含多个紧密集成的组件。spark的核心是一个对由很�
 
   不同于MapReduce仅支持Map和Reduce两种编程算子，Spark提供了超过80种不同的Transformation和Action算子，如map,reduce,filter,groupByKey,sortByKey,foreach等，并且采用函数式编程风格，实现相同的功能需要的代码量极大缩小。
 
-  ![](../../pics/mr_spark.webp)
+  ![](../../pics/mr_spark.jpg)
 
 - 通用性
 
@@ -58,13 +58,13 @@ spark项目包含多个紧密集成的组件。spark的核心是一个对由很�
 
   这些不同类型的处理都可以在同一个应用中无缝使用。这对于企业应用来说，就可使用一个平台来进行不同的工程实现，减少了人力开发和平台部署成本。
 
-  ![](../../pics/spark_support.webp)
+  ![](../../pics/spark_support.jpg)
 
 - 兼容性
 
   Spark能够跟很多开源工程兼容使用。如Spark可以使用Hadoop的YARN和Apache Mesos作为它的资源管理和调度器，并且Spark可以读取多种数据源，如HDFS、HBase、MySQL等。
 
-  ![](../../pics/spark_feature.webp)
+  ![](../../pics/spark_feature.jpg)
 
 ## 2. Spark框架
 
@@ -108,7 +108,7 @@ spark项目包含多个紧密集成的组件。spark的核心是一个对由很�
 
 - Job
 
-  作业，一个Job包含多个RDD及作用于相应RDD上的各种操作。，一个Job包含多个Stage
+  作业，一个Job包含多个RDD及作用于相应RDD上的各种操作。一个Job包含多个Stage
 
 - Stage
 
@@ -120,7 +120,7 @@ spark项目包含多个紧密集成的组件。spark的核心是一个对由很�
 
 任务相关的概念可以下图概括，
 
-![](../../pics/spark_job.webp)
+![](../../pics/spark_job.jpg)
 
 > **总结：Application由多个Job组成，Job由多个Stage组成，Stage由多个Task组成。Stage是作业调度的基本单位。**
 
@@ -152,9 +152,9 @@ Spark集群由Driver, Cluster Manager（Standalone,Yarn 或 Mesos），以及Wor
 
 整个过程如下所示，
 
-![](../../pics/spark_exec_plan.webp)
+![](../../pics/spark_exec_plan.jpg)
 
-![](../../pics/spark_exec_feature.webp)
+![](../../pics/spark_exec_feature.jpg)
 
 ### 2.4 Spark部署模式
 
@@ -197,7 +197,7 @@ RDD是弹性分布式数据集，是Spark的基本数据结构，它代表一个
 
 > Transformation操作具有Lazy特性，即Spark不会立刻进行实际的计算，只会记录执行的轨迹，只有触发Action操作的时候，它才会根据DAG图真正的执行。
 
-![](../../pics/spark_rdd.webp)
+![](../../pics/spark_rdd.jpg)
 
 上面提到了RDD的操作有两种关系（Transformation和Action），RDD之间的依赖关系也有两种，即**宽依赖**和**窄依赖**。
 
@@ -211,7 +211,7 @@ RDD是弹性分布式数据集，是Spark的基本数据结构，它代表一个
 
 > 宽依赖关系操作一般具有shuffle的过程，即通过一个partitioner函数将父RDD中每个分区上key不同的记录分发到不同的子RDD分区
 
-![](../../pics/rdd_rely.webp)
+![](../../pics/rdd_rely.jpg)
 
 在**2.1 Spark 基本概念**中提到了任务相关的概念，而RDD的依赖关系确定了Stage的切分方式。
 
@@ -219,7 +219,7 @@ RDD是弹性分布式数据集，是Spark的基本数据结构，它代表一个
 
   RDD之间的依赖关系形成一个DAG有向无环图，DAG会提交给DAGScheduler，DAGScheduler会把DAG划分成相互依赖的多个Stage，**划分Stage的依据就是RDD之间的宽窄依赖**。遇到宽依赖就划分Stage，每个Stage包含一个或多个task任务。然后将这些task以taskSet的形式提交给TaskScheduler运行。
 
-![](../../pics/spark_kj.webp)
+![](../../pics/spark_kj.jpg)
 
 #### 2.5.1 word count示例
 
@@ -231,7 +231,7 @@ val wordOne = word.map((_,1))
 wordOne.reduceByKey(_+_)
 ```
 
-![](../../pics/spark_wordcount.webp)
+![](../../pics/spark_wordcount.jpg)
 
 ### 2.5 RDD编程
 
@@ -823,7 +823,7 @@ hello这个key，在三个节点上对应了总共7条数据，这些数据都�
 
 - join型
 
-  通过广播机制做map join，对于倾斜key（数据量多的那个）打上随机标1-n，另外一个小的数据重复n份，然后再join，这样就把数据分割为5份进行，可以分配到不同task中。
+  通过广播机制做map join，对于倾斜key（数据量多的那个）打上随机标1-n，另外一个小的数据重复n份，然后再join，这样就把数据分割为n份进行，可以分配到不同task中。
 
 ### 3.4 shuffle调优
 
