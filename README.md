@@ -158,7 +158,6 @@
         ├── ParamBayesOptimization.md
         ├── Regularization.ipynb
         ├── gradient.ipynb
-        ├── 对偶问题.md
         └── 点乘和叉乘.md
 ```
 
